@@ -14,7 +14,7 @@ import (
 // Config represents the application's configuration.
 type Config struct {
 	GitTimeout   int      `yaml:"git_timeout"`
-	Verbosity    int      `yaml:`verbosity
+	Verbosity    int      `yaml:"verbosity"`
 	DefaultRoots []string `yaml:"default_roots"`
 }
 

@@ -1,7 +1,17 @@
 #!/bin/bash
 
-NAME="$( basename -s .git "$( git remote get-url origin )" )"
+set -e  # Exit on error
 
-gem uninstall "$NAME" -aIx --user-install --force
+# Create bin/ if it doesn't exist
+mkdir -p bin
 
-bundle exec rake install
+# Build each cmd/ subdirectory
+for cmd_dir in cmd/*/main.go; do
+  if [[ -f "$cmd_dir" ]]; then
+    cmd_name=$(basename "$(dirname "$cmd_dir")")
+    echo "Building $cmd_name..."
+    go build -o "bin/$cmd_name" "./$(dirname "$cmd_dir")"
+  fi
+done
+
+echo "All binaries built in bin/"
