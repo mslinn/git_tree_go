@@ -1,9 +1,0 @@
-#!/bin/bash
-
-for X in cmd/*; do
-  echo "Building $X"
-  cd "$X" || exit
-  go build
-  cd - || exit
-  "$X/$(basename "$X")" -h
-done
