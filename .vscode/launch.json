@@ -1,0 +1,122 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "args": [
+        "'$work'"
+      ],
+      "debugPort": "0",
+      "name": "Debug git_tree_update",
+      "type": "rdbg",
+      "request": "launch",
+      "script": "${workspaceRoot}/exe/git-update"
+    },
+    {
+      "args": [
+        "'$work'"
+      ],
+      "debugPort": "0",
+      "name": "Debug process_messages",
+      "type": "rdbg",
+      "request": "launch",
+      "script": "${workspaceRoot}/playground/process_messages.rb"
+    },
+    {
+      "args": [
+        "$sitesUbuntu"
+      ],
+      "debugPort": "0",
+      "name": "Debug git-commitAll",
+      "type": "rdbg",
+      "request": "launch",
+      "script": "${workspaceRoot}/exe/git-commitAll"
+    },
+    {
+      "args": [
+        "pwd"
+      ],
+      "debugPort": "0",
+      "name": "Debug git-exec with no tree specified",
+      "type": "rdbg",
+      "request": "launch",
+      "script": "${workspaceRoot}/exe/git-exec"
+    },
+    {
+      "args": [
+        "$sitesUbuntu",
+        "pwd"
+      ],
+      "debugPort": "0",
+      "name": "Debug git-exec with tree specified",
+      "type": "rdbg",
+      "request": "launch",
+      "script": "${workspaceRoot}/exe/git-exec"
+    },
+    {
+      "args": [ "'$work'" ],
+      "debugPort": "0",
+      "name": "Debug git-evars",
+      "type": "rdbg",
+      "request": "launch",
+      "script": "${workspaceRoot}/exe/git-evars"
+    },
+    {
+      "args": [ "'$work'" ],
+      "debugPort": "0",
+      "name": "Debug git-replicate",
+      "type": "rdbg",
+      "request": "launch",
+      "script": "${workspaceRoot}/exe/git-replicate"
+    },
+    {
+      "args": [
+        "'$work'"
+      ],
+      "debugPort": "0",
+      "name": "Debug git-update",
+      "type": "rdbg",
+      "request": "launch",
+      "script": "${workspaceRoot}/exe/git-update"
+    },
+    {
+      "debugPort": "0",
+      "name": "Attach rdbg",
+      "request": "attach",
+      "type": "rdbg",
+    },
+    {
+      "name": "Attach with ruby_lsp",
+      "request": "attach",
+      "type": "ruby_lsp",
+    },
+    {
+      "args": [
+        "-I", "${workspaceRoot}/lib",
+        "-I", "${workspaceRoot}/spec",
+        "-P", "${workspaceRoot}/spec/**/*_spec.rb"
+      ],
+      "askParameters": false,
+      "debugPort": "0",
+      "name": "RSpec - all",
+      "request": "launch",
+      "script": "${workspaceRoot}/binstub/rspec",
+      "type": "rdbg",
+    },
+    {
+      "args": [
+        "-I", "${workspaceRoot}/lib",
+        "-I", "${workspaceRoot}/spec",
+        "${file}"
+      ],
+      "debugPort": "0",
+      "name": "RSpec - active spec only",
+      "request": "launch",
+      "script": "${workspaceRoot}/binstub/rspec",
+      "type": "rdbg",
+      "useBundler": true,
+    },
+  ]
+}
