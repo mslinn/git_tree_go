@@ -5,7 +5,11 @@
 	// List of extensions which should be recommended for users of this workspace.
 	"recommendations": [
 		"DavidAnson.vscode-markdownlint",
+    "streetsidesoftware.code-spell-checker",
 		"devonray.snippet",
+    "tamasfe.even-better-toml",
+    "premparihar.gotestexplorer",
+    "ms-vscode.go",
 		"redhat.vscode-yaml",
 	  "shd101wyy.markdown-preview-enhanced",
 		"timonwong.shellcheck",

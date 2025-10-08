@@ -22,17 +22,24 @@ Multiple goroutines are used to dramatically boost performance.
 
 - The `git-update` command updates each repository in the tree.
 
+
 ## Installation
 
 ### Prerequisites
 
 You need Go 1.24 or later installed on your system.
 
+```shell
+$ go version
+go version go1.24.2 linux/amd64
+```
+
+
 ### Building from Source
 
 ```shell
 # Clone the repository
-$ git clone <repository-url>
+$ git clone https://github.com/mslinn/git_tree_go.git
 $ cd git_tree_go
 
 # Build all commands
@@ -292,7 +299,7 @@ $ make clean
 
 ### Project Structure
 
-```
+```text
 git_tree_go/
 ├── cmd/                    # Command implementations
 │   ├── git-commitAll/
