@@ -1,16 +1,40 @@
-__MACOSX
-.bsp/
-.DS_Store
-.idea
-.idea*
-*.Identifier
-*.iml
-*.log
-*.out
-*.sublime*
-*.swp
-*.tmp
-*~
-~*
-out/
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
 bin/
+dist/
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.txt
+coverage.html
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Dependency directories
+# vendor/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Config files (user-specific)
+.treeconfig.yml
+
+# Build artifacts
+*.log

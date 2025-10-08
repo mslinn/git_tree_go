@@ -1,9 +1,9 @@
-# `Git_tree`
+# `git-tree-go`
 
 This Go package installs commands that walk a git directory tree and act on each repository.
 Directories containing a file called `.ignore` are ignored.
 Ignoring a directory means all subdirectories are also ignored.
-Multiple threads are used to dramatically boost performance.
+Multiple goroutines are used to dramatically boost performance.
 
 - The `git-commitAll` command commits and pushes all changes to each repository in the tree.
   Repositories in a detached `HEAD` state are skipped.
@@ -22,35 +22,44 @@ Multiple threads are used to dramatically boost performance.
 
 - The `git-update` command updates each repository in the tree.
 
-You can list them by using the `gem specification` command, like this:
-
-```shell
-$ gem specification git_tree executables
----
-- git-commitAll
-- git-evars
-- git-exec
-- git-replicate
-- git-update
-```
-
 ## Installation
 
-Type the following at a shell prompt on the machine you are copying the git tree from,
-and on the machine that you are copying the git tree to:
+### Prerequisites
+
+You need Go 1.24 or later installed on your system.
+
+### Building from Source
 
 ```shell
-$ yes | sudo apt install cmake libgit2-dev libssh2-1-dev pkg-config
+# Clone the repository
+$ git clone <repository-url>
+$ cd git_tree_go
 
-$ gem install git_tree
+# Build all commands
+$ make build
+
+# Or build and install to $GOPATH/bin
+$ make install
 ```
 
-To register the new commands, either log out and log back in, or open a new console.
+### Manual Installation
 
+```shell
+# Build individual commands
+$ go build -o bin/git-commitAll ./cmd/git-commitAll
+$ go build -o bin/git-evars ./cmd/git-evars
+$ go build -o bin/git-exec ./cmd/git-exec
+$ go build -o bin/git-replicate ./cmd/git-replicate
+$ go build -o bin/git-treeconfig ./cmd/git-treeconfig
+$ go build -o bin/git-update ./cmd/git-update
+
+# Add the bin directory to your PATH
+$ export PATH="$PWD/bin:$PATH"
+```
 
 ## Configuration
 
-The `git_tree` commands can be configured to suit your preferences. Settings are resolved in the following order of precedence,
+The `git-tree-go` commands can be configured to suit your preferences. Settings are resolved in the following order of precedence,
 where items higher in the list override those lower down:
 
 1. **Environment Variables**
@@ -104,7 +113,7 @@ They must be prefixed with `GIT_TREE_` and be in uppercase.
 
 ## Use Cases
 
-### Dependent Gem Maintenance
+### Dependent Package Maintenance
 
 One of my directory trees holds Jekyll plugins, packaged as 25 gems.
 They depend on one another, and must be built in a particular order.
@@ -114,9 +123,7 @@ Most operations do not require that the projects be processed in any particular 
 the build process must be invoked on the dependencies first.
 It is quite tedious to do this 25 times, over and over.
 
-Several years ago I wrote a bash script to perform this task, but as its requirements became more complex,
-the bash script proved difficult to maintain.
-This use case is now fulfilled by the `git-exec` command provided by the `git_tree` package.
+This use case is now fulfilled by the `git-exec` command provided by the `git-tree-go` package.
 See below for further details.
 
 
@@ -127,8 +134,8 @@ one of the tedious tasks that must be performed is to replicate
 the directory trees of Git repositories.
 
 It is a bad idea to attempt to copy an entire Git repository between computers,
-because the `.git` directories within them can quite large.
-So large, in fact, that it might much more time to copy than re-cloning.
+because the `.git` directories within them can be quite large.
+So large, in fact, that it might take much more time to copy than re-cloning.
 
 The reason is that copying the entire Git repository actually means copying the same information twice:
 first the `.git` hidden directory, complete with all the history for the project,
@@ -137,40 +144,16 @@ Git repos store the entire development history of the project in their `.git` di
 so as they accumulate history they eventually become much larger than the
 code that is checked out at any given time.
 
-One morning I found myself facing the boring task of doing this manually once again.
-Instead, I wrote a bash script that scanned a Git directory tree and
-wrote out another bash script that clones the repos in the tree.
-Any additional remote references are replicated.
-
-Two years later, I decided to add new features to the script.
-Bash is great for short scripts,
-but it is not conducive to debugging or structured programming.
-I rewrote the bash script in Go, using the `rugged` gem.
-Much better!
-
-Two years after that I used Google Gemini Code Assist to rewrite it again in Go,
-this time as a multithreaded program.
-Performance is now lightning-fast for most use cases.
-I was also able to use the same core logic for several of the individual
-Git-related scripts I had written over the years.
-However, completion with Gemini was problematic.
-It was unable to reason about the code, so I decided to rewrite in Go.
-
-The result is this Go package.
-
-This use case is fulfilled by the
-`git-replicate`
-and `git-evars` commands
-provided by this gem.
+This use case is fulfilled by the `git-replicate` and `git-evars` commands provided by this package.
 
 
 ## Usage
 
 ### Single- And Multi-Threading
 
-All of these commands are inherently multi-threaded.
-They consume up to 75% of the threads that your CPU can provide.
-You may notice that your computer's fan gets louder when your run these commands on large numbers of Git repositories.
+All of these commands are inherently multi-threaded using Go's goroutines.
+They consume up to 75% of the CPU cores that your system can provide.
+You may notice that your computer's fan gets louder when you run these commands on large numbers of Git repositories.
 
 For builds and other sequential tasks, however, parallelism is inappropriate.
 Instead, it is necessary to build components in the proper order.
@@ -178,10 +161,8 @@ Doing all the work on a single thread is a straightforward way of ensuring prope
 
 Use the `-s/--serial` option when the order that Git projects are processed matters.
 All of the commands support this option.
-Execution will take much longer that without the option,
+Execution will take much longer than without the option,
 because performing most tasks take longer to perform in sequence than performing them in parallel.
-Exceptions include old sayings like “Nine women cannot have a baby in one month.”
-For those exceptions, use the `-s/--serial` option.
 
 ### `git-commitAll`
 
@@ -209,9 +190,8 @@ Usage examples:
 ```
 
 ```shell
-$ git commitAll
+$ git-commitAll
 Processing $sites $sitesUbuntu $work
-Initializing 18 worker threads...
 
 All work is complete.
 ```
@@ -227,7 +207,7 @@ an environment variable reference, pointing to the top-level directory to replic
 The environment variable reference must be contained within single quotes to prevent expansion by the shell.
 
 The following appends to any script in the `$work` directory called `.evars`.
-The script defines environment variables that point to each git repos pointed to by `$work`:
+The script defines environment variables that point to each git repo pointed to by `$work`:
 
 ```shell
 $ git-evars '$work' >> $work/.evars
@@ -247,52 +227,12 @@ export c=$mnt/c
 export _6of26=$sites/6of26
 export computers=$sites/computers.mslinn.com
 export ebooks=$sites/ebooks
-export expert=$sites/expert
-export fonts=$sites/fonts
-export intranet=$sites/intranet.ancientwarmth.com
-export intranet_mslinn=$sites/intranet.mslinn.com
-export jekyllTemplate=$sites/jekyllTemplate
-export lyrics=$sites/lyrics
-export metamusic=$sites/metamusic
-export music=$sites/music.mslinn.com
-export photos=$sites/photos
-export supportingLiterature=$sites/supportingLiterature
-export www=$sites/www.scalacourses.com
+...
 ```
-
-The environment variable definitions are meant to be saved into a file that is `source`d upon boot.
-While you could place them in a file like `~/.bashrc`,
-the author's preference is to instead place them in `$work/.evars`,
-and add the following to `~/.bashrc`:
-
-```shell
-source "$work/.evars"
-```
-
-Thus each time you log in, the environment variable definitions will have been re-established.
-You can therefore change directory to any of the cloned projects, like this:
-
-```shell
-$ cd $git_root
-
-$ cd $my_project
-```
-
 
 ### `git-exec` Usage
 
 The `git-exec` command can be run on any computer.
-The command requires two parameters.
-The first parameter indicates the directory or directories to process.
-3 forms are accepted:
-
-  1. A directory name, which may be relative or absolute.
-
-  2. An environment variable reference,
-     which must be contained within single quotes to prevent expansion by the shell.
-
-  3. A list of directory names, which may be relative or absolute, and may contain environment variables.
-
 
 #### Example 1
 
@@ -300,108 +240,16 @@ For all subdirectories of current directory,
 update `Gemfile.lock` and install a local copy of the gem:
 
 ```shell
-$ git-exec \
-  '$jekyll_plugin_logger
-  $jekyll_draft
-  $jekyll_plugin_support
-  $jekyll_all_collections
-  $jekyll_plugin_template
-  $jekyll_flexible_include_plugin
-  $jekyll_href
-  $jekyll_img
-  $jekyll_outline
-  $jekyll_plugin_template
-  $jekyll_pre
-  $jekyll_quote'
-  'bundle && bundle update && rake install'
+$ git-exec '$jekyll_plugins' 'bundle && bundle update && rake install'
 ```
 
 #### Example 2
-
-This example shows how to display the version of projects that
-create gems under the directory pointed to by `$my_plugins`.
-
-An executable script is required on the `PATH`, so `git-exec`
-can invoke it as it loops through the subdirectories.
-I call this script `version`, and it is written in `bash`,
-although the language used is not significant:
-
-```shell
-#!/bin/bash
-
-x="$( ls lib/**/version.rb 2> /dev/null )"
-if [ -f "$x" ]; then
-  v="$( \
-    cat "$x" | \
-    grep '=' | \
-    sed -e s/.freeze// | \
-    tr -d 'VERSION ="' | \
-    tr -d \
-  )"
-  echo "$(basename $PWD) v$v"
-fi
-```
-
-Call it like this:
-
-```shell
-$ git-exec '$my_plugins' version
-jekyll_all_collections v0.3.3
-jekyll_archive_create v1.0.2
-jekyll_archive_display v1.0.1
-jekyll_auto_redirect v0.1.0
-jekyll_basename_dirname v1.0.3
-jekyll_begin_end v1.0.1
-jekyll_bootstrap5_tabs v1.1.2
-jekyll_context_inspector v1.0.1
-jekyll_download_link v1.0.1
-jekyll_draft v1.1.2
-jekyll_flexible_include_plugin v2.0.20
-jekyll_from_to_until v1.0.3
-jekyll_href v1.2.5
-jekyll_img v0.1.5
-jekyll_nth v1.1.0
-jekyll_outline v1.2.0
-jekyll_pdf v0.1.0
-jekyll_plugin_logger v2.1.1
-jekyll_plugin_support v0.7.0
-jekyll_plugin_template v0.3.0
-jekyll_pre v1.4.1
-jekyll_quote v0.4.0
-jekyll_random_hex v1.0.0
-jekyll_reading_time v1.0.0
-jekyll_revision v0.1.0
-jekyll_run v1.0.1
-jekyll_site_inspector v1.0.0
-jekyll_sort_natural v1.0.0
-jekyll_time_since v0.1.3
-```
-
-#### Example 3
 
 List the projects under the directory pointed to by `$my_plugins`
 that have a `demo/` subdirectory:
 
 ```shell
-$ git-exec '$my_plugins' \
-  'if [ -d demo ]; then realpath demo; fi'
-/mnt/c/work/jekyll/my_plugins/jekyll-hello/demo
-/mnt/c/work/jekyll/my_plugins/jekyll_all_collections/demo
-/mnt/c/work/jekyll/my_plugins/jekyll_archive_create/demo
-/mnt/c/work/jekyll/my_plugins/jekyll_download_link/demo
-/mnt/c/work/jekyll/my_plugins/jekyll_draft/demo
-/mnt/c/work/jekyll/my_plugins/jekyll_flexible_include_plugin/demo
-/mnt/c/work/jekyll/my_plugins/jekyll_from_to_until/demo
-/mnt/c/work/jekyll/my_plugins/jekyll_href/demo
-/mnt/c/work/jekyll/my_plugins/jekyll_img/demo
-/mnt/c/work/jekyll/my_plugins/jekyll_outline/demo
-/mnt/c/work/jekyll/my_plugins/jekyll_pdf/demo
-/mnt/c/work/jekyll/my_plugins/jekyll_plugin_support/demo
-/mnt/c/work/jekyll/my_plugins/jekyll_plugin_template/demo
-/mnt/c/work/jekyll/my_plugins/jekyll_pre/demo
-/mnt/c/work/jekyll/my_plugins/jekyll_quote/demo
-/mnt/c/work/jekyll/my_plugins/jekyll_revision/demo
-/mnt/c/work/jekyll/my_plugins/jekyll_time_since/demo
+$ git-exec '$my_plugins' 'if [ -d demo ]; then realpath demo; fi'
 ```
 
 ### `git-replicate` Usage
@@ -415,122 +263,65 @@ $ git-replicate '$work' > work.sh                # Replicate repos under $work
 $ git-replicate '$work $sites' > replicate.sh    # Replicate repos under $work and $sites
 ```
 
-The generated environment variables will all be relative to the
-path pointed to by the expanded environment variable that you provided.
-You will understand what this means once you look at the generated script.
-
 When `git-replicate` completes,
 edit the generated script to suit, then
 copy it to the target machine and run it.
-The following example copies the script to `machine2` and runs it:
-
-```shell
-$ scp work.sh machine2:
-
-$ ssh machine2 work.sh
-```
-
-
-#### Generated Script from `git-replicate`
-
-Following is a sample of one section, which is repeated for every git repo that is processed:
-You can edit them to suit.
-
-```shell
-if [ ! -d "sinatra/sinatras-skeleton/.git" ]; then
-  mkdir -p 'sinatra'
-  pushd 'sinatra' > /dev/null
-  git clone git@github.com:mslinn/sinatras-skeleton.git
-  git remote add upstream 'https://github.com/simonneutert/sinatras-skeleton.git'
-  popd > /dev/null
-fi
-```
 
 ### `git-update`
 
-The `git-update` command updates each repository in the tree.
-
-
-## Additional Information
-
-More information is available on
-[Mike Slinn’s website](https://www.mslinn.com/git/1100-git-tree.html).
+The `git-update` command updates each repository in the tree by running `git pull`.
 
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies.
-
-Run the following to create a directory tree for testing.
+### Building
 
 ```shell
-$ Go bin/make_test_directory.rb
+# Build all commands
+$ make build
+
+# Build a specific command
+$ go build -o bin/git-update ./cmd/git-update
+
+# Run tests
+$ make test
+
+# Clean build artifacts
+$ make clean
 ```
 
-You can run `bin/console` for an interactive prompt that will allow you to experiment.
+### Project Structure
 
-```shell
-$ bin/console
-irb(main):001:0> GitTree::ReplicateCommand.new('$work').run
 ```
-
-
-### Build and Install Locally
-
-To build and install this gem onto your local machine, run:
-
-```shell
-$ bundle exec rake install
+git_tree_go/
+├── cmd/                    # Command implementations
+│   ├── git-commitAll/
+│   ├── git-evars/
+│   ├── git-exec/
+│   ├── git-replicate/
+│   ├── git-treeconfig/
+│   └── git-update/
+├── internal/               # Internal packages
+│   ├── abstract_command.go
+│   ├── config.go
+│   ├── gem_support.go
+│   ├── git_tree_walker.go
+│   ├── log.go
+│   ├── task.go
+│   ├── thread_pool.go
+│   └── zowee_optimizer.go
+├── go.mod
+├── go.sum
+├── Makefile
+└── README.md
 ```
-
-Examine the newly built gem:
-
-```shell
-$ gem info git_tree
-
-*** LOCAL GEMS ***
-
-git_tree (0.3.0)
-    Author: Mike Slinn
-    Homepage: https://www.mslinn.com/git/1100-git-tree.html
-    License: MIT
-    Installed at: /home/mslinn/.rbenv/versions/3.4.6/lib/Go/gems/3.4.0
-
-    Installs five commands that walk a git directory tree and perform tasks.
-```
-
-
-### Build and Push to GoGems
-
-To release a new version:
-
-  1. Update the version number in `version.rb`.
-  2. Commit all changes to git; if you don't the next step might fail with an
-     unexplainable error message.
-  3. Run the following:
-
-     ```shell
-     $ bundle exec rake release
-     ```
-
-     The above creates a git tag for the version, commits the created tag,
-     and pushes the new `.gem` file to [GoGems.org](https://Gogems.org).
-
-
-## Contributing
-
-1. Fork the project
-2. Create a descriptively named feature branch
-3. Add your feature
-4. Submit a pull request
-
 
 ## License
 
-The gem is available as open source under the terms of the
+The package is available as open source under the terms of the
 [MIT License](https://opensource.org/licenses/MIT).
 
 ## Additional Information
 
 More information is available on
-[Mike Slinn’s website](https://www.mslinn.com/git/1100-git-tree.html)
+[Mike Slinn's website](https://www.mslinn.com/git/1100-git-tree.html)

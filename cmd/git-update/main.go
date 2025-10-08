@@ -1,85 +1,103 @@
 package main
 
 import (
-	"flag"
+	"context"
 	"fmt"
-	"git-tree-go/internal"
-	"log"
 	"os"
 	"os/exec"
-	"sync"
+	"strings"
+	"time"
+
+	"git-tree-go/internal"
 )
 
 func main() {
-	help := flag.Bool("h", false, "Show help message and exit.")
-	quiet := flag.Bool("q", false, "Suppress normal output, only show errors.")
-	verbose := flag.Bool("v", false, "Increase verbosity.")
-	flag.Parse()
+	cmd := internal.NewAbstractCommand(os.Args[1:], true)
 
-	if *help {
-		printHelp()
-		os.Exit(0)
-	}
+	// Parse common flags
+	remainingArgs := cmd.ParseCommonFlags(showHelp)
 
-	config := &internal.Config{
-		DefaultRoots: []string{"`$HOME/work`", "`$HOME/sites`"}, // Example default roots
-	}
-
-	args := flag.Args()
-	rootPaths, err := internal.DetermineRoots(args, config)
+	// Create walker
+	walker, err := internal.NewGitTreeWalker(remainingArgs, cmd.Serial)
 	if err != nil {
-		log.Fatalf("Error determining roots: %v", err)
+		internal.Log(internal.LogQuiet, fmt.Sprintf("Error: %v", err), internal.ColorRed)
+		os.Exit(1)
 	}
 
-	var repos []string
-	for _, rootPath := range rootPaths {
-		r, err := internal.FindGitReposRecursive(rootPath)
-		if err != nil {
-			log.Printf("Error finding git repos in %s: %v", rootPath, err)
-		}
-		repos = append(repos, r...)
-	}
+	// Process repositories
+	walker.Process(func(dir string, threadID int, w *internal.GitTreeWalker) {
+		processRepo(w, dir, threadID, cmd.Config)
+	})
 
-	var wg sync.WaitGroup
-	for _, repo := range repos {
-		wg.Add(1)
-		go func(repoPath string) {
-			defer wg.Done()
-			updateRepo(repoPath, *quiet, *verbose)
-		}(repo)
-	}
-	wg.Wait()
+	internal.ShutdownLogger()
 }
 
-func updateRepo(repoPath string, quiet, verbose bool) {
-	if !quiet {
-		fmt.Printf("Updating %s\n", repoPath)
+func showHelp() {
+	config := internal.NewConfig()
+	fmt.Printf(`git-update - Recursively updates trees of git repositories.
+
+If no arguments are given, uses default roots (%s) as roots.
+These environment variables point to roots of git repository trees to walk.
+Skips directories containing a .ignore file, and all subdirectories.
+
+Environment variables that point to the roots of git repository trees must have been exported, for example:
+
+  $ export work=$HOME/work
+
+Usage: git-update [OPTIONS] [ROOTS...]
+
+OPTIONS:
+  -h, --help           Show this help message and exit.
+  -q, --quiet          Suppress normal output, only show errors.
+  -s, --serial         Run tasks serially in a single thread.
+  -v, --verbose        Increase verbosity. Can be used multiple times (e.g., -v, -vv).
+
+ROOTS:
+When specifying roots, directory paths can be specified, and environment variables can be used, preceded by a dollar sign.
+
+Usage examples:
+
+$ git-update               # Use default environment variables as roots
+$ git-update $work $sites  # Use specific environment variables
+$ git-update $work /path/to/git/tree
+`, strings.Join(config.DefaultRoots, ", "))
+}
+
+func processRepo(walker *internal.GitTreeWalker, dir string, threadID int, config *internal.Config) {
+	abbrevDir := walker.AbbreviatePath(dir)
+	internal.Log(internal.LogNormal, fmt.Sprintf("Updating %s", abbrevDir), internal.ColorGreen)
+	internal.Log(internal.LogVerbose, fmt.Sprintf("Thread %d: git -C %s pull", threadID, dir), internal.ColorYellow)
+
+	// Create context with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(config.GitTimeout)*time.Second)
+	defer cancel()
+
+	// Execute git pull
+	gitCmd := exec.CommandContext(ctx, "git", "pull")
+	gitCmd.Dir = dir
+
+	output, err := gitCmd.CombinedOutput()
+	outputStr := string(output)
+
+	if ctx.Err() == context.DeadlineExceeded {
+		internal.Log(internal.LogNormal, fmt.Sprintf("[TIMEOUT] Thread %d: git pull timed out in %s", threadID, abbrevDir), internal.ColorRed)
+		return
 	}
 
-	cmd := exec.Command("git", "pull")
-	cmd.Dir = repoPath
-	output, err := cmd.CombinedOutput()
-
 	if err != nil {
-		log.Printf("[ERROR] git pull failed in %s: %v\n", repoPath, err)
-		if len(output) > 0 {
-			log.Printf("Output:\n%s", string(output))
+		exitCode := -1
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			exitCode = exitErr.ExitCode()
+		}
+		internal.Log(internal.LogNormal, fmt.Sprintf("[ERROR] git pull failed in %s (exit code %d):", abbrevDir, exitCode), internal.ColorRed)
+		if len(outputStr) > 0 {
+			internal.Log(internal.LogNormal, strings.TrimSpace(outputStr), internal.ColorRed)
 		}
 		return
 	}
 
-	if verbose {
-		if len(output) > 0 {
-			fmt.Printf("Output for %s:\n%s", repoPath, string(output))
-		}
+	// Success
+	if internal.GetVerbosity() >= internal.LogVerbose && len(outputStr) > 0 {
+		internal.Log(internal.LogNormal, strings.TrimSpace(outputStr), internal.ColorGreen)
 	}
-}
-
-func printHelp() {
-	fmt.Println("git-update - Recursively updates trees of git repositories.")
-	fmt.Println("\nUsage: git-update [OPTIONS] [ROOTS...]")
-	fmt.Println("\nOPTIONS:")
-	flag.PrintDefaults()
-	fmt.Println("\nROOTS:")
-	fmt.Println("  When specifying roots, directory paths can be specified, and environment variables can be used, preceded by a dollar sign.")
 }

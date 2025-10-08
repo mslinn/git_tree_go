@@ -1,108 +1,131 @@
 package main
 
 import (
-	"flag"
 	"fmt"
-	"git-tree-go/internal"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"git-tree-go/internal"
 	"github.com/go-git/go-git/v5"
 )
 
 func main() {
-	help := flag.Bool("h", false, "Show help message and exit.")
-	flag.Parse()
+	cmd := internal.NewAbstractCommand(os.Args[1:], true)
 
-	if *help {
-		printHelp()
-		os.Exit(0)
-	}
+	// Parse common flags
+	remainingArgs := cmd.ParseCommonFlags(showHelp)
 
-	config := &internal.Config{
-		DefaultRoots: []string{"HOME/work", "HOME/sites"}, // Example default roots
-	}
-
-	args := flag.Args()
-	rootPaths, err := internal.DetermineRoots(args, config)
+	// Create walker
+	walker, err := internal.NewGitTreeWalker(remainingArgs, cmd.Serial)
 	if err != nil {
-		log.Fatalf("Error determining roots: %v", err)
+		internal.Log(internal.LogQuiet, fmt.Sprintf("Error: %v", err), internal.ColorRed)
+		os.Exit(1)
 	}
 
-	var repos []string
-	for _, rootPath := range rootPaths {
-		r, err := internal.FindGitReposRecursive(rootPath)
-		if err != nil {
-			log.Printf("Error finding git repos in %s: %v", rootPath, err)
+	var result []string
+
+	// Process repositories
+	walker.FindAndProcessRepos(func(dir, rootArg string) {
+		output := replicateOne(dir, rootArg, walker)
+		if len(output) > 0 {
+			result = append(result, output...)
 		}
-		repos = append(repos, r...)
+	})
+
+	// Output results to stdout
+	if len(result) > 0 {
+		for _, line := range result {
+			fmt.Println(line)
+		}
 	}
 
-	for _, repoPath := range repos {
-		script, err := replicateRepo(repoPath, rootPaths)
-		if err != nil {
-			log.Printf("[ERROR] Error replicating repo %s: %v\n", repoPath, err)
+	internal.ShutdownLogger()
+}
+
+func showHelp() {
+	config := internal.NewConfig()
+	fmt.Printf(`git-replicate - Replicates trees of git repositories and writes a bash script to STDOUT.
+If no directories are given, uses default roots (%s) as roots.
+The script clones the repositories and replicates any remotes.
+Skips directories containing a .ignore file.
+
+Options:
+  -h, --help           Show this help message and exit.
+  -q, --quiet          Suppress normal output, only show errors.
+  -v, --verbose        Increase verbosity. Can be used multiple times (e.g., -v, -vv).
+
+Usage: git-replicate [OPTIONS] [ROOTS...]
+
+ROOTS can be directory names or environment variable references (e.g., '$work').
+Multiple roots can be specified in a single quoted string.
+
+Usage examples:
+$ git-replicate '$work'
+$ git-replicate '$work $sites'
+`, strings.Join(config.DefaultRoots, ", "))
+}
+
+func replicateOne(dir, rootArg string, walker *internal.GitTreeWalker) []string {
+	output := []string{}
+
+	// Open the repository
+	repo, err := git.PlainOpen(dir)
+	if err != nil {
+		internal.Log(internal.LogDebug, fmt.Sprintf("Error opening repository %s: %v", dir, err), internal.ColorRed)
+		return output
+	}
+
+	// Get the config
+	cfg, err := repo.Config()
+	if err != nil {
+		internal.Log(internal.LogDebug, fmt.Sprintf("Error getting config for %s: %v", dir, err), internal.ColorRed)
+		return output
+	}
+
+	// Get origin URL
+	originRemote, ok := cfg.Remotes["origin"]
+	if !ok || len(originRemote.URLs) == 0 {
+		internal.Log(internal.LogDebug, fmt.Sprintf("No origin remote found for %s", dir), internal.ColorYellow)
+		return output
+	}
+	originURL := originRemote.URLs[0]
+
+	// Get the root path
+	rootName := strings.Trim(rootArg, "'$")
+	rootPath := os.Getenv(rootName)
+	if rootPath == "" {
+		// If it's not an env var, it might be a direct path
+		if paths, ok := walker.RootMap[rootArg]; ok && len(paths) > 0 {
+			rootPath = paths[0]
+		} else {
+			return output
+		}
+	}
+
+	// Calculate relative directory
+	relativeDir := strings.TrimPrefix(dir, rootPath+"/")
+	if relativeDir == dir {
+		// Not a subdirectory of root, use absolute path
+		relativeDir = dir
+	}
+
+	// Build the script
+	output = append(output, fmt.Sprintf("if [ ! -d \"%s/.git\" ]; then", relativeDir))
+	output = append(output, fmt.Sprintf("  mkdir -p '%s'", filepath.Dir(relativeDir)))
+	output = append(output, fmt.Sprintf("  pushd '%s' > /dev/null", filepath.Dir(relativeDir)))
+	output = append(output, fmt.Sprintf("  git clone '%s' '%s'", originURL, filepath.Base(relativeDir)))
+
+	// Add other remotes
+	for remoteName, remote := range cfg.Remotes {
+		if remoteName == "origin" || len(remote.URLs) == 0 {
 			continue
 		}
-		if script != "" {
-			fmt.Println(script)
-		}
-	}
-}
-
-func replicateRepo(repoPath string, rootPaths []string) (string, error) {
-	r, err := git.PlainOpen(repoPath)
-	if err != nil {
-		return "", fmt.Errorf("error opening repository: %w", err)
+		output = append(output, fmt.Sprintf("  git remote add %s '%s'", remoteName, remote.URLs[0]))
 	}
 
-	origin, err := r.Remote("origin")
-	if err != nil {
-		return "", fmt.Errorf("error getting origin remote: %w", err)
-	}
+	output = append(output, "  popd > /dev/null")
+	output = append(output, "fi")
 
-	originURL := origin.Config().URLs[0]
-
-	var relativeDir string
-	for _, root := range rootPaths {
-		if strings.HasPrefix(repoPath, root) {
-			relativeDir, _ = filepath.Rel(root, repoPath)
-			break
-		}
-	}
-	if relativeDir == "" {
-		relativeDir = filepath.Base(repoPath)
-	}
-
-	var script strings.Builder
-	script.WriteString(fmt.Sprintf("if [ ! -d \"%s/.git\" ]; then\n", relativeDir))
-	script.WriteString(fmt.Sprintf("  mkdir -p '%s'\n", filepath.Dir(relativeDir)))
-	script.WriteString(fmt.Sprintf("  pushd '%s' > /dev/null\n", filepath.Dir(relativeDir)))
-	script.WriteString(fmt.Sprintf("  git clone '%s' '%s'\n", originURL, filepath.Base(relativeDir)))
-
-	remotes, err := r.Remotes()
-	if err != nil {
-		return "", fmt.Errorf("error getting remotes: %w", err)
-	}
-
-	for _, remote := range remotes {
-		if remote.Config().Name != "origin" {
-			script.WriteString(fmt.Sprintf("  git remote add %s '%s'\n", remote.Config().Name, remote.Config().URLs[0]))
-		}
-	}
-
-	script.WriteString("  popd > /dev/null\n")
-	script.WriteString("fi")
-
-	return script.String(), nil
-}
-
-func printHelp() {
-	fmt.Println("git-replicate - Replicates trees of git repositories and writes a bash script to STDOUT.")
-	fmt.Println("\nUsage: git-replicate [OPTIONS] [ROOTS...]")
-	fmt.Println("\nOPTIONS:")
-	flag.PrintDefaults()
-	fmt.Println("\nROOTS can be directory names or environment variable references (e.g., '$work').")
+	return output
 }

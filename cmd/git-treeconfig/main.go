@@ -1,100 +1,78 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"log"
 	"os"
-	"path/filepath"
+	"strconv"
 	"strings"
 
-	"github.com/AlecAivazis/survey/v2"
-	"gopkg.in/yaml.v2"
+	"git-tree-go/internal"
 )
 
-// Config represents the application's configuration.
-type Config struct {
-	GitTimeout   int      `yaml:"git_timeout"`
-	Verbosity    int      `yaml:"verbosity"`
-	DefaultRoots []string `yaml:"default_roots"`
-}
-
 func main() {
+	config := internal.NewConfig()
+	scanner := bufio.NewScanner(os.Stdin)
+
 	home, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatalf("Failed to get user home directory: %v", err)
+		fmt.Fprintf(os.Stderr, "Error: Could not determine home directory: %v\n", err)
+		os.Exit(1)
 	}
-	configPath := filepath.Join(home, ".git-tree.yml")
 
-	fmt.Printf("Welcome to git-tree configuration.\n")
-	fmt.Printf("This utility will help you create a configuration file at %s\n", configPath)
-	fmt.Printf("You can press Enter to accept default values presented within brackets.\n\n")
+	configPath := fmt.Sprintf("%s/.treeconfig.yml", home)
 
-	existingConfig := &Config{}
-	if _, err := os.Stat(configPath); err == nil {
-		data, err := os.ReadFile(configPath)
-		if err != nil {
-			log.Fatalf("Failed to read existing config: %v", err)
+	fmt.Println("Welcome to git-tree configuration.")
+	fmt.Printf("This utility will help you create a configuration file at: %s\n", configPath)
+	fmt.Println("Press Enter to accept the default value in brackets.")
+	fmt.Println()
+
+	// Git timeout
+	fmt.Printf("Git command timeout in seconds? |%d| ", config.GitTimeout)
+	if scanner.Scan() {
+		input := strings.TrimSpace(scanner.Text())
+		if input != "" {
+			if timeout, err := strconv.Atoi(input); err == nil {
+				config.GitTimeout = timeout
+			} else {
+				fmt.Fprintf(os.Stderr, "Invalid timeout value, using default\n")
+			}
 		}
-		err = yaml.Unmarshal(data, existingConfig)
-		if err != nil {
-			log.Fatalf("Failed to unmarshal existing config: %v", err)
+	}
+
+	// Verbosity
+	fmt.Printf("Default verbosity level (0=quiet, 1=normal, 2=verbose)? |%d| ", config.Verbosity)
+	if scanner.Scan() {
+		input := strings.TrimSpace(scanner.Text())
+		if input != "" {
+			if verbosity, err := strconv.Atoi(input); err == nil && verbosity >= 0 && verbosity <= 2 {
+				config.Verbosity = verbosity
+			} else {
+				fmt.Fprintf(os.Stderr, "Invalid verbosity value (must be 0-2), using default\n")
+			}
 		}
 	}
 
-	qs := []*survey.Question{
-		{
-			Name:     "GitTimeout",
-			Prompt:   &survey.Input{Message: "Git command timeout in seconds?"},
-			Validate: survey.Required,
-		},
-		{
-			Name:     "Verbosity",
-			Prompt:   &survey.Input{Message: "Default verbosity level (0=quiet, 1=normal, 2=verbose, 3=debug)?"},
-			Validate: survey.Required,
-		},
-		{
-			Name:     "DefaultRoots",
-			Prompt:   &survey.Input{Message: "Default root directories (space-separated)?"},
-			Validate: survey.Required,
-		},
+	// Default roots
+	fmt.Printf("Default root directories (space-separated)? |%s| ", strings.Join(config.DefaultRoots, " "))
+	if scanner.Scan() {
+		input := strings.TrimSpace(scanner.Text())
+		if input != "" {
+			config.DefaultRoots = strings.Fields(input)
+		}
 	}
 
-	answers := struct {
-		GitTimeout   int
-		Verbosity    int
-		DefaultRoots string
-	}{}
-
-	if existingConfig.GitTimeout != 0 {
-		qs[0].Prompt.(*survey.Input).Default = fmt.Sprintf("%d", existingConfig.GitTimeout)
-	}
-	if existingConfig.Verbosity != 0 {
-		qs[1].Prompt.(*survey.Input).Default = fmt.Sprintf("%d", existingConfig.Verbosity)
-	}
-	if len(existingConfig.DefaultRoots) > 0 {
-		qs[2].Prompt.(*survey.Input).Default = strings.Join(existingConfig.DefaultRoots, " ")
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error reading input: %v\n", err)
+		os.Exit(1)
 	}
 
-	err = survey.Ask(qs, &answers)
-	if err != nil {
-		log.Fatalf("Error during survey: %v", err)
+	// Save configuration
+	if err := config.SaveToFile(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error saving configuration: %v\n", err)
+		os.Exit(1)
 	}
 
-	newConfig := &Config{
-		GitTimeout:   answers.GitTimeout,
-		Verbosity:    answers.Verbosity,
-		DefaultRoots: strings.Fields(answers.DefaultRoots),
-	}
-
-	data, err := yaml.Marshal(newConfig)
-	if err != nil {
-		log.Fatalf("Failed to marshal new config: %v", err)
-	}
-
-	err = os.WriteFile(configPath, data, 0644)
-	if err != nil {
-		log.Fatalf("Failed to write config file: %v", err)
-	}
-
-	fmt.Printf("\nConfiguration saved to %s\n", configPath)
+	fmt.Println()
+	fmt.Printf("\033[32mConfiguration saved to %s\033[0m\n", configPath)
 }

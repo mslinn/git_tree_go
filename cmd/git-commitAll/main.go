@@ -1,131 +1,181 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
-	"git-tree-go/internal"
-	"log"
 	"os"
-	"sync"
+	"os/exec"
+	"strings"
 	"time"
 
+	"git-tree-go/internal"
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
+var commitMessage string
+
 func main() {
-	message := flag.String("m", "-", "Commit message.")
-	help := flag.Bool("h", false, "Show help message and exit.")
-	quiet := flag.Bool("q", false, "Suppress normal output, only show errors.")
-	verbose := flag.Bool("v", false, "Increase verbosity.")
-	flag.Parse()
+	cmd := internal.NewAbstractCommand(os.Args[1:], true)
 
-	if *help {
-		printHelp()
-		os.Exit(0)
-	}
-
-	config := &internal.Config{
-		DefaultRoots: []string{"HOME/work", "HOME/sites"}, // Example default roots
-	}
-
-	args := flag.Args()
-	rootPaths, err := internal.DetermineRoots(args, config)
-	if err != nil {
-		log.Fatalf("Error determining roots: %v", err)
-	}
-
-	var repos []string
-	for _, rootPath := range rootPaths {
-		r, err := internal.FindGitReposRecursive(rootPath)
-		if err != nil {
-			log.Printf("Error finding git repos in %s: %v", rootPath, err)
-		}
-		repos = append(repos, r...)
-	}
-
-	var wg sync.WaitGroup
-	for _, repo := range repos {
-		wg.Add(1)
-		go func(repoPath string) {
-			defer wg.Done()
-			commitRepo(repoPath, *message, *quiet, *verbose)
-		}(repo)
-	}
-	wg.Wait()
-}
-
-func commitRepo(repoPath, message string, quiet, verbose bool) {
-	if !quiet {
-		fmt.Printf("Checking %s\n", repoPath)
-	}
-
-	r, err := git.PlainOpen(repoPath)
-	if err != nil {
-		log.Printf("[ERROR] Error opening repository %s: %v\n", repoPath, err)
-		return
-	}
-
-	w, err := r.Worktree()
-	if err != nil {
-		log.Printf("[ERROR] Error getting worktree for %s: %v\n", repoPath, err)
-		return
-	}
-
-	status, err := w.Status()
-	if err != nil {
-		log.Printf("[ERROR] Error getting status for %s: %v\n", repoPath, err)
-		return
-	}
-
-	if status.IsClean() {
-		if verbose {
-			fmt.Printf("No changes to commit in %s\n", repoPath)
-		}
-		return
-	}
-
-	if !quiet {
-		fmt.Printf("Committing changes in %s\n", repoPath)
-	}
-
-	_, err = w.Add(".")
-	if err != nil {
-		log.Printf("[ERROR] Error adding files in %s: %v\n", repoPath, err)
-		return
-	}
-
-	_, err = w.Commit(message, &git.CommitOptions{
-		Author: &object.Signature{
-			Name:  "git-tree-go",
-			Email: "git-tree-go@example.com",
-			When:  time.Now(),
-		},
+	// Add message flag
+	remainingArgs := cmd.ParseFlagsWithCallback(showHelp, func(fs *flag.FlagSet) {
+		fs.StringVar(&commitMessage, "m", "-", "Use the given string as the commit message")
+		fs.StringVar(&commitMessage, "message", "-", "Use the given string as the commit message")
 	})
+
+	// Create walker
+	walker, err := internal.NewGitTreeWalker(remainingArgs, cmd.Serial)
 	if err != nil {
-		log.Printf("[ERROR] Error committing in %s: %v\n", repoPath, err)
+		internal.Log(internal.LogQuiet, fmt.Sprintf("Error: %v", err), internal.ColorRed)
+		os.Exit(1)
+	}
+
+	// Process repositories
+	walker.Process(func(dir string, threadID int, w *internal.GitTreeWalker) {
+		processRepo(w, dir, threadID, cmd.Config)
+	})
+
+	internal.ShutdownLogger()
+}
+
+func showHelp() {
+	config := internal.NewConfig()
+	fmt.Printf(`git-commitAll - Recursively commits and pushes changes in all git repositories under the specified roots.
+If no directories are given, uses default roots (%s) as roots.
+Skips directories containing a .ignore file, and all subdirectories.
+Repositories in a detached HEAD state are skipped.
+
+Options:
+  -h, --help                Show this help message and exit.
+  -m, --message MESSAGE     Use the given string as the commit message.
+                            (default: "-")
+  -q, --quiet               Suppress normal output, only show errors.
+  -s, --serial              Run tasks serially in a single thread in the order specified.
+  -v, --verbose             Increase verbosity. Can be used multiple times (e.g., -v, -vv).
+
+Usage:
+  git-commitAll [OPTIONS] [ROOTS...]
+
+ROOTS can be directory names or environment variable references (e.g., '$work').
+Multiple roots can be specified in a single quoted string.
+
+Usage examples:
+  git-commitAll                                # Commit with default message "-"
+  git-commitAll -m "This is a commit message"  # Commit with a custom message
+  git-commitAll $work $sites                   # Commit in repositories under specific roots
+`, strings.Join(config.DefaultRoots, ", "))
+}
+
+func processRepo(walker *internal.GitTreeWalker, dir string, threadID int, config *internal.Config) {
+	shortDir := walker.AbbreviatePath(dir)
+	internal.Log(internal.LogVerbose, fmt.Sprintf("Examining %s on thread %d", shortDir, threadID), internal.ColorGreen)
+
+	// Check for .ignore file
+	if _, err := os.Stat(dir + "/.ignore"); err == nil {
+		internal.Log(internal.LogDebug, fmt.Sprintf("  Skipping %s due to .ignore file", shortDir), internal.ColorGreen)
 		return
 	}
 
-	if !quiet {
-		fmt.Printf("Pushing changes in %s\n", repoPath)
-	}
-
-	err = r.Push(&git.PushOptions{})
+	// Open the repository
+	repo, err := git.PlainOpen(dir)
 	if err != nil {
-		log.Printf("[ERROR] Error pushing in %s: %v\n", repoPath, err)
+		internal.Log(internal.LogNormal, fmt.Sprintf("Error opening repository %s: %v", shortDir, err), internal.ColorRed)
 		return
 	}
 
-	if !quiet {
-		fmt.Printf("Committed and pushed changes in %s\n", repoPath)
+	// Check if HEAD is detached
+	head, err := repo.Head()
+	if err != nil {
+		internal.Log(internal.LogVerbose, fmt.Sprintf("  Skipping %s because HEAD is detached or invalid", shortDir), internal.ColorYellow)
+		return
+	}
+
+	if !head.Name().IsBranch() {
+		internal.Log(internal.LogVerbose, fmt.Sprintf("  Skipping %s because it is in a detached HEAD state", shortDir), internal.ColorYellow)
+		return
+	}
+
+	// Create context with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(config.GitTimeout)*time.Second)
+	defer cancel()
+
+	// Check if there are changes
+	if !repoHasChanges(ctx, dir) {
+		internal.Log(internal.LogDebug, fmt.Sprintf("  No changes to commit in %s", shortDir), internal.ColorGreen)
+		return
+	}
+
+	// Commit and push changes
+	if err := commitChanges(ctx, dir, commitMessage, shortDir); err != nil {
+		if ctx.Err() == context.DeadlineExceeded {
+			internal.Log(internal.LogNormal, fmt.Sprintf("[TIMEOUT] Thread %d: git operations timed out in %s", threadID, shortDir), internal.ColorRed)
+		} else {
+			internal.Log(internal.LogNormal, fmt.Sprintf("Error processing %s: %v", shortDir, err), internal.ColorRed)
+		}
 	}
 }
 
-func printHelp() {
-	fmt.Println("git-commitAll - Recursively commits and pushes changes in all git repositories.")
-	fmt.Println("\nUsage: git-commitAll [OPTIONS] [ROOTS...]")
-	fmt.Println("\nOPTIONS:")
-	flag.PrintDefaults()
-	fmt.Println("\nROOTS can be directory names or environment variable references (e.g., '$work').")
+func repoHasChanges(ctx context.Context, dir string) bool {
+	cmd := exec.CommandContext(ctx, "git", "status", "--porcelain")
+	cmd.Dir = dir
+
+	output, err := cmd.Output()
+	if err != nil {
+		return false
+	}
+
+	return len(strings.TrimSpace(string(output))) > 0
+}
+
+func repoHasStagedChanges(ctx context.Context, dir string) bool {
+	cmd := exec.CommandContext(ctx, "git", "diff", "--cached", "--name-only")
+	cmd.Dir = dir
+
+	output, err := cmd.Output()
+	if err != nil {
+		return false
+	}
+
+	return len(strings.TrimSpace(string(output))) > 0
+}
+
+func commitChanges(ctx context.Context, dir, message, shortDir string) error {
+	// Stage all changes
+	addCmd := exec.CommandContext(ctx, "git", "add", "--all")
+	addCmd.Dir = dir
+	if err := addCmd.Run(); err != nil {
+		return fmt.Errorf("git add failed: %w", err)
+	}
+
+	// Check if there are staged changes
+	if !repoHasStagedChanges(ctx, dir) {
+		return nil
+	}
+
+	// Commit changes
+	commitCmd := exec.CommandContext(ctx, "git", "commit", "-m", message, "--quiet", "--no-gpg-sign")
+	commitCmd.Dir = dir
+	if err := commitCmd.Run(); err != nil {
+		return fmt.Errorf("git commit failed: %w", err)
+	}
+
+	// Get current branch name
+	branchCmd := exec.CommandContext(ctx, "git", "rev-parse", "--abbrev-ref", "HEAD")
+	branchCmd.Dir = dir
+	branchOutput, err := branchCmd.Output()
+	if err != nil {
+		return fmt.Errorf("failed to get branch name: %w", err)
+	}
+	currentBranch := strings.TrimSpace(string(branchOutput))
+
+	// Push changes
+	pushCmd := exec.CommandContext(ctx, "git", "push", "--set-upstream", "origin", currentBranch)
+	pushCmd.Dir = dir
+	if err := pushCmd.Run(); err != nil {
+		return fmt.Errorf("git push failed: %w", err)
+	}
+
+	internal.Log(internal.LogNormal, fmt.Sprintf("Committed and pushed changes in %s", shortDir), internal.ColorGreen)
+	return nil
 }
