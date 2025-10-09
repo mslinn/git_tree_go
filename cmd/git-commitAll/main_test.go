@@ -278,33 +278,6 @@ func TestRepoHasStagedChanges(t *testing.T) {
   }
 }
 
-// TestEnvVarName tests the envVarName function in git-evars
-func TestEnvVarName(t *testing.T) {
-  tests := []struct {
-    name     string
-    input    string
-    expected string
-  }{
-    {"simple name", "/path/to/myrepo", "myrepo"},
-    {"with hyphens", "/path/to/my-repo", "my_repo"},
-    {"with spaces", "/path/to/my repo", "my_repo"},
-    {"www prefix", "/path/to/www.example.com", "example"},
-    {"with extension", "/path/to/repo.git", "repo"},
-    {"empty", "", ""},
-    {"root", "/", ""},
-    {"dot", ".", ""},
-  }
-
-  for _, tt := range tests {
-    t.Run(tt.name, func(t *testing.T) {
-      result := envVarName(tt.input)
-      if result != tt.expected {
-        t.Errorf("envVarName(%q) = %q, expected %q", tt.input, result, tt.expected)
-      }
-    })
-  }
-}
-
 // Helper function to create a test context with timeout
 func newTestContext() *testContext {
   return &testContext{}

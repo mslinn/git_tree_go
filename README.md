@@ -145,20 +145,20 @@ This use case is fulfilled by the `git-replicate` and `git-evars` commands provi
 
 ## Usage
 
-### Single- And Multi-Threading
+### Single- And Multi-Processing
 
-All of these commands are inherently multi-threaded using Go's goroutines.
+All of these commands are inherently multi-processed using Go's goroutines.
 They consume up to 75% of the CPU cores that your system can provide.
 You may notice that your computer's fan gets louder when you run these commands on large numbers of Git repositories.
 
-For builds and other sequential tasks, however, parallelism is inappropriate.
+For builds and other sequential tasks, however, multiprocessing is inappropriate.
 Instead, it is necessary to build components in the proper order.
-Doing all the work on a single thread is a straightforward way of ensuring proper task ordering.
+Doing all the work as a single process is a straightforward way of ensuring proper task ordering.
 
 Use the `-s/--serial` option when the order that Git projects are processed matters.
 All of the commands support this option.
 Execution will take much longer than without the option,
-because performing most tasks take longer to perform in sequence than performing them in parallel.
+because performing most tasks take longer to perform in sequence than performing them via multiprocessing.
 
 ### `git-commitAll`
 
