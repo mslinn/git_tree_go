@@ -1,26 +1,29 @@
 # `git-tree-go`
 
-This Go package installs commands that walk a git directory tree and act on each repository.
+This Go package installs commands that walk one or more git directory trees and
+act on each repository.
 Directories containing a file called `.ignore` are ignored.
 Ignoring a directory means all subdirectories are also ignored.
 Multiple goroutines are used to dramatically boost performance.
 
-- The `git-commitAll` command commits and pushes all changes to each repository in the tree.
-  Repositories in a detached `HEAD` state are skipped.
+- The `git-commitAll` command commits and pushes all changes to each repository
+  in the tree. Repositories in a detached `HEAD` state are skipped.
 
-- The `git-evars` command writes a script that defines environment variables pointing to each git repository.
+- The `git-evars` command writes a script that defines environment variables
+  pointing to each git repository.
 
 - The `git-exec` command executes an arbitrary bash command for each repository.
 
 - The `git-replicate` command writes a script that clones the repos in the tree,
   and adds any defined remotes.
 
-  - Any git repos that have already been cloned into the target directory tree are skipped.
-    This means you can rerun `git-replicate` as many times as you want, without ill effects.
+  - Any git repos that have already been cloned into the target directory tree
+    are skipped. This means you can rerun `git-replicate` as many times as you
+    want, without ill effects.
 
   - All remotes in each repo are replicated.
 
-- The `git-update` command updates each repository in the tree.
+- The `git-update` command updates each repository in the trees.
 
 
 ## Installation
@@ -37,36 +40,18 @@ go version go1.24.2 linux/amd64
 
 ### Building from Source
 
+Download, build and install to `$GOPATH/bin` like this:
+
 ```shell
-# Clone the repository
 $ git clone https://github.com/mslinn/git_tree_go.git
 $ cd git_tree_go
-
-# Build all commands
-$ make build
-
-# Or build and install to $GOPATH/bin
 $ make install
-```
-
-### Manual Installation
-
-```shell
-# Build individual commands
-$ go build -o bin/git-commitAll ./cmd/git-commitAll
-$ go build -o bin/git-evars ./cmd/git-evars
-$ go build -o bin/git-exec ./cmd/git-exec
-$ go build -o bin/git-replicate ./cmd/git-replicate
-$ go build -o bin/git-treeconfig ./cmd/git-treeconfig
-$ go build -o bin/git-update ./cmd/git-update
-
-# Add the bin directory to your PATH
-$ export PATH="$PWD/bin:$PATH"
 ```
 
 ## Configuration
 
-The `git-tree-go` commands can be configured to suit your preferences. Settings are resolved in the following order of precedence,
+The `git-tree-go` commands can be configured to suit your preferences.
+Configuration settings are resolved in the following order of precedence,
 where items higher in the list override those lower down:
 
 1. **Environment Variables**
@@ -75,9 +60,11 @@ where items higher in the list override those lower down:
 
 This allows for flexible customization of the program's behavior.
 
+
 ### Interactive Setup: `git-treeconfig`
 
-The easiest way to get started is to use the `git-treeconfig` command. This interactive tool will ask you a few questions
+The easiest way to get started is to use the `git-treeconfig` command.
+This interactive tool will ask you a few questions
 and create a configuration file for you at `~/.treeconfig.yml`.
 
 ```shell
@@ -281,20 +268,52 @@ The `git-update` command updates each repository in the tree by running `git pul
 
 ## Development
 
-### Building
+### Makefile
+
+[`Makefile`](https://en.wikipedia.org/wiki/Make_(software))
+automates common development tasks for this Go project.
+The main commands are:
 
 ```shell
-# Build all commands
-$ make build
+make         # Short form for 'make all'.
+make all     # The default command. It formats, vets, and builds all the Go commands.
+make build   # Compile all commands and places the binaries in the bin/ directory.
+make clean   # Delete the bin/ directory to clean up build files.
+make fmt     # Format all Go code in the project.
+make help    # Display a help message with all available commands.
+make install # Install all the commands to your GOPATH/bin, making them executable from your terminal.
+make test    # Run all the tests in the project.
+make tidy    # Tidy the go.mod and go.sum files.
+make vet     # Analyze the code for potential issues.
+```
 
-# Build a specific command
-$ go build -o bin/git-update ./cmd/git-update
+Build just one command:
 
-# Run tests
-$ make test
+```shell
+make git-commitAll
+make git-evars
+make git-exec
+make git-replicate
+make git-treeconfig
+make git-update
+```
 
-# Clean build artifacts
-$ make clean
+Example:
+
+```shell
+$ make
+Formatting code...
+internal/gem_support.go
+internal/task.go
+Vetting code...
+Building all commands...
+  Building git-commitAll...
+  Building git-evars...
+  Building git-exec...
+  Building git-replicate...
+  Building git-treeconfig...
+  Building git-update...
+Build complete!
 ```
 
 ### Project Structure
@@ -323,10 +342,37 @@ git_tree_go/
 └── README.md
 ```
 
+### Testing
+
+```shell
+$ make test
+Running tests...
+?       git-tree-go/cmd/git-commitAll   [no test files]
+?       git-tree-go/cmd/git-evars       [no test files]
+?       git-tree-go/cmd/git-exec        [no test files]
+?       git-tree-go/cmd/git-replicate   [no test files]
+?       git-tree-go/cmd/git-treeconfig  [no test files]
+?       git-tree-go/cmd/git-update      [no test files]
+=== RUN   TestAbstractCommand_Initialization
+--- PASS: TestAbstractCommand_Initialization (0.00s)
+=== RUN   TestAbstractCommand_ArgumentHandling
+--- PASS: TestAbstractCommand_ArgumentHandling (0.00s)
+=== RUN   TestAbstractCommand_ParseCommonFlags_Quiet
+--- PASS: TestAbstractCommand_ParseCommonFlags_Quiet (0.00s)
+=== RUN   TestAbstractCommand_ParseCommonFlags_Serial
+--- PASS: TestAbstractCommand_ParseCommonFlags_Serial (0.00s)
+=== RUN   TestAbstractCommand_ParseCommonFlags_Verbose
+FAIL    git-tree-go/internal    0.003s
+FAIL
+make: *** [Makefile:49: test] Error 1
+```
+
+
 ## License
 
 The package is available as open source under the terms of the
 [MIT License](https://opensource.org/licenses/MIT).
+
 
 ## Additional Information
 

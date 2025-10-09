@@ -10,8 +10,8 @@ import (
 )
 
 // CommonPrefix returns the longest path prefix that is a prefix of all paths in the array.
-// If the array is empty, return ''.
-// If only the leading slash matches and allowRootMatch is true, return '/', else return ''.
+// If the array is empty, return ”.
+// If only the leading slash matches and allowRootMatch is true, return '/', else return ”.
 func CommonPrefix(paths []string, allowRootMatch bool) string {
 	if len(paths) == 0 {
 		return ""

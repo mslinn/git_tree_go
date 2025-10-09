@@ -26,7 +26,7 @@ func (e *Execution) Contains(text string) bool {
 		return false
 	}
 	return containsString(e.ExecResult.Stdout, text) ||
-	       containsString(e.ExecResult.Stderr, text)
+		containsString(e.ExecResult.Stderr, text)
 }
 
 // UserMessage represents a message sent to the user.
@@ -120,12 +120,12 @@ func RunCommand(command, dir string) (*ExecResult, error) {
 // Helper function
 func containsString(s, substr string) bool {
 	return len(s) > 0 && len(substr) > 0 &&
-	       fmt.Sprint(s) != "" &&
-	       fmt.Sprint(substr) != "" &&
-	       (s == substr || len(s) >= len(substr) &&
-	        (s[:len(substr)] == substr ||
-	         s[len(s)-len(substr):] == substr ||
-	         findSubstring(s, substr)))
+		fmt.Sprint(s) != "" &&
+		fmt.Sprint(substr) != "" &&
+		(s == substr || len(s) >= len(substr) &&
+			(s[:len(substr)] == substr ||
+				s[len(s)-len(substr):] == substr ||
+				findSubstring(s, substr)))
 }
 
 func findSubstring(s, substr string) bool {
