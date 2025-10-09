@@ -50,7 +50,7 @@ $ cd git_tree_go
 $ make install
 ```
 
-For Ubuntu Linux, the above places executables in `$HOME/go/bin/`.
+The `Makefile` causes executables to be created in `$HOME/go/bin/`.
 
 
 ### Pre-built Binaries
