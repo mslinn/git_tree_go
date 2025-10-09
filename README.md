@@ -6,6 +6,8 @@ Directories containing a file called `.ignore` are ignored.
 Ignoring a directory means all subdirectories are also ignored.
 Multiple goroutines are used to dramatically boost performance.
 
+## Commands
+
 - The `git-commitAll` command commits and pushes all changes to each repository
   in the tree. Repositories in a detached `HEAD` state are skipped.
 
