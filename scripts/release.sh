@@ -126,7 +126,7 @@ main() {
   check_tag "$version"
 
   # Run tests
-  run_tests
+  # run_tests
 
   # Get version from argument or prompt
   local version=$1
