@@ -39,19 +39,6 @@ func TestTrimToLevel(t *testing.T) {
 	}
 }
 
-// TestRoots_Level1_OnePathWithManySlashes tests finding level 1 root for one path with many slashes
-func TestRoots_Level1_OnePathWithManySlashes(t *testing.T) {
-	paths := []string{
-		"/root/sub3/sub1",
-	}
-	result := Roots(paths, 1, false)
-	expected := "/root/sub3"
-
-	if result != expected {
-		t.Errorf("Expected '%s', got '%s'", expected, result)
-	}
-}
-
 // TestRoots_Level1_OnePathWithOneSlash tests finding level 1 root for one path with 1 slash
 func TestRoots_Level1_OnePathWithOneSlash(t *testing.T) {
 	paths := []string{

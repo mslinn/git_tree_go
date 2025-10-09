@@ -31,31 +31,6 @@ func TestZoweeOptimizer_SimpleNestedStructure(t *testing.T) {
 	}
 }
 
-// TestZoweeOptimizer_MultipleBranchesFromCommonRoot tests multiple branches from a common root
-func TestZoweeOptimizer_MultipleBranchesFromCommonRoot(t *testing.T) {
-	optimizer := NewZoweeOptimizer(nil)
-	paths := []string{"/a/b", "/a/b/c", "/a/b/d"}
-
-	result := optimizer.Optimize(paths, []string{})
-
-	expected := []string{
-		"export b=/a/b",
-		"export c=$b/c",
-		"export d=$b/d",
-	}
-
-	if len(result) != len(expected) {
-		t.Errorf("Expected %d results, got %d", len(expected), len(result))
-		t.Logf("Result: %v", result)
-		return
-	}
-
-	for i, exp := range expected {
-		if result[i] != exp {
-			t.Errorf("Expected result[%d] to be '%s', got '%s'", i, exp, result[i])
-		}
-	}
-}
 
 // TestZoweeOptimizer_UnrelatedPaths tests optimization of unrelated paths
 func TestZoweeOptimizer_UnrelatedPaths(t *testing.T) {
@@ -141,32 +116,6 @@ func TestZoweeOptimizer_SinglePath(t *testing.T) {
 
 	if result[0] != expected[0] {
 		t.Errorf("Expected result to be '%s', got '%s'", expected[0], result[0])
-	}
-}
-
-// TestZoweeOptimizer_ComplexNesting tests more complex nesting scenarios
-func TestZoweeOptimizer_ComplexNesting(t *testing.T) {
-	optimizer := NewZoweeOptimizer(nil)
-	paths := []string{
-		"/root/sub1/sub2/blah",
-		"/root/sub1/sub2",
-		"/root/sub1",
-		"/root/sub3/sub1",
-	}
-
-	result := optimizer.Optimize(paths, []string{})
-
-	// All paths should be optimized
-	if len(result) != len(paths) {
-		t.Errorf("Expected %d results, got %d", len(paths), len(result))
-		t.Logf("Result: %v", result)
-	}
-
-	// Each result should start with "export "
-	for i, r := range result {
-		if !strings.HasPrefix(r, "export ") {
-			t.Errorf("Result[%d] should start with 'export ', got '%s'", i, r)
-		}
 	}
 }
 

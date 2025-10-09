@@ -304,7 +304,7 @@ git_tree_go/
 ├── internal/               # Internal packages
 │   ├── abstract_command.go
 │   ├── config.go
-│   ├── gem_support.go
+│   ├── util.go
 │   ├── git_tree_walker.go
 │   ├── log.go
 │   ├── task.go
@@ -335,7 +335,7 @@ Example:
 ```shell
 $ make
 Formatting code...
-internal/gem_support.go
+internal/util.go
 internal/task.go
 Vetting code...
 Building all commands...
