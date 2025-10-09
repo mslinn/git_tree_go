@@ -91,35 +91,7 @@ func Roots(paths []string, level int, allowRootMatch bool) string {
 	return "/" + strings.Join(elements[:level], "/")
 }
 
-// TrimToLevel trims paths to the specified level (1-indexed).
-func TrimToLevel(paths []string, level int) []string {
-	result := make([]string, 0, len(paths))
-	seen := make(map[string]bool)
 
-	for _, path := range paths {
-		parts := strings.Split(path, "/")
-		// Filter out empty strings
-		var elements []string
-		for _, part := range parts {
-			if part != "" {
-				elements = append(elements, part)
-			}
-		}
-
-		if len(elements) >= level {
-			elements = elements[:level]
-		}
-		trimmed := "/" + strings.Join(elements, "/")
-
-		if !seen[trimmed] {
-			result = append(result, trimmed)
-			seen[trimmed] = true
-		}
-	}
-
-	sort.Strings(result)
-	return result
-}
 
 // DerefSymlink returns the real path of a symlink.
 func DerefSymlink(symlink string) (string, error) {

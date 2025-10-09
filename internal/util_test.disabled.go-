@@ -18,27 +18,6 @@ func TestRoots_Level1_OnePathWithManySlashes_DISABLED(t *testing.T) {
 	}
 }
 
-// TestRoots_DeeperLevel tests finding roots at deeper levels
-func TestRoots_DeeperLevel_DISABLED(t *testing.T) {
-	t.Skip("Temporarily disabled due to issues")
-	paths := []string{
-		"/root/sub1/sub2/sub3",
-		"/root/sub1/sub2/sub4",
-	}
-
-	result := Roots(paths, 1, false)
-	expected := "/root/sub1/sub2"
-	if result != expected {
-		t.Errorf("Expected '%s', got '%s'", expected, result)
-	}
-
-	result = Roots(paths, 2, false)
-	expected = "/root/sub1"
-	if result != expected {
-		t.Errorf("Expected '%s', got '%s'", expected, result)
-	}
-}
-
 // TestZoweeOptimizer_MultipleBranchesFromCommonRoot tests multiple branches from a common root
 func TestZoweeOptimizer_MultipleBranchesFromCommonRoot(t *testing.T) {
 	optimizer := NewZoweeOptimizer(nil)

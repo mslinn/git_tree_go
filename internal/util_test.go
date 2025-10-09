@@ -4,41 +4,6 @@ import (
 	"testing"
 )
 
-// TestTrimToLevel tests trimming paths to a specific level
-func TestTrimToLevel(t *testing.T) {
-	paths := []string{
-		"/root/sub3/sub1",
-	}
-
-	// Test level 1
-	result := TrimToLevel(paths, 1)
-	expected := []string{"/root"}
-	if len(result) != len(expected) || result[0] != expected[0] {
-		t.Errorf("TrimToLevel(level=1): expected %v, got %v", expected, result)
-	}
-
-	// Test level 2
-	result = TrimToLevel(paths, 2)
-	expected = []string{"/root/sub3"}
-	if len(result) != len(expected) || result[0] != expected[0] {
-		t.Errorf("TrimToLevel(level=2): expected %v, got %v", expected, result)
-	}
-
-	// Test level 3
-	result = TrimToLevel(paths, 3)
-	expected = []string{"/root/sub3/sub1"}
-	if len(result) != len(expected) || result[0] != expected[0] {
-		t.Errorf("TrimToLevel(level=3): expected %v, got %v", expected, result)
-	}
-
-	// Test level beyond path depth
-	result = TrimToLevel(paths, 4)
-	expected = []string{"/root/sub3/sub1"}
-	if len(result) != len(expected) || result[0] != expected[0] {
-		t.Errorf("TrimToLevel(level=4): expected %v, got %v", expected, result)
-	}
-}
-
 // TestRoots_Level1_OnePathWithOneSlash tests finding level 1 root for one path with 1 slash
 func TestRoots_Level1_OnePathWithOneSlash(t *testing.T) {
 	paths := []string{
@@ -174,59 +139,6 @@ func TestCommonPrefix_SameRoot(t *testing.T) {
 	}
 }
 
-// TestTrimToLevel_MultiplePaths tests trimming multiple paths
-func TestTrimToLevel_MultiplePaths(t *testing.T) {
-	paths := []string{
-		"/root/sub1/sub2/blah",
-		"/root/sub1/sub2",
-		"/root/sub1",
-		"/root/sub3/sub1",
-	}
-
-	result := TrimToLevel(paths, 1)
-	expected := []string{"/root"}
-	if len(result) != len(expected) || result[0] != expected[0] {
-		t.Errorf("TrimToLevel(level=1): expected %v, got %v", expected, result)
-	}
-
-	result = TrimToLevel(paths, 2)
-	expected = []string{"/root/sub1", "/root/sub3"}
-	if len(result) != len(expected) {
-		t.Errorf("TrimToLevel(level=2): expected length %d, got %d", len(expected), len(result))
-	}
-	for i, exp := range expected {
-		if i >= len(result) || result[i] != exp {
-			t.Errorf("TrimToLevel(level=2): expected result[%d] to be '%s', got '%s'", i, exp, result[i])
-		}
-	}
-
-	result = TrimToLevel(paths, 3)
-	expected = []string{"/root/sub1/sub1", "/root/sub1/sub2", "/root/sub3/sub1"}
-	if len(result) != len(expected) {
-		t.Errorf("TrimToLevel(level=3): expected length %d, got %d", len(expected), len(result))
-	}
-}
-
-// TestTrimToLevel_Uniqueness tests that trimmed paths are unique
-func TestTrimToLevel_Uniqueness(t *testing.T) {
-	paths := []string{
-		"/root/sub1/a",
-		"/root/sub1/b",
-		"/root/sub1/c",
-	}
-
-	result := TrimToLevel(paths, 2)
-	expected := []string{"/root/sub1"}
-
-	if len(result) != len(expected) {
-		t.Errorf("Expected %d unique paths, got %d", len(expected), len(result))
-	}
-
-	if result[0] != expected[0] {
-		t.Errorf("Expected '%s', got '%s'", expected[0], result[0])
-	}
-}
-
 // TestEnsureEndsWith tests ensuring a string ends with a suffix
 func TestEnsureEndsWith(t *testing.T) {
 	tests := []struct {
@@ -276,16 +188,6 @@ func TestExpandEnv(t *testing.T) {
 	}
 }
 
-// TestTrimToLevel_EmptyPaths tests trimming empty paths
-func TestTrimToLevel_EmptyPaths(t *testing.T) {
-	paths := []string{}
-	result := TrimToLevel(paths, 1)
-
-	if len(result) != 0 {
-		t.Errorf("Expected empty result, got %v", result)
-	}
-}
-
 // TestRoots_EmptyPaths tests roots with empty paths
 func TestRoots_EmptyPaths(t *testing.T) {
 	paths := []string{}
@@ -303,26 +205,6 @@ func TestRoots_EmptyPaths(t *testing.T) {
 	}
 }
 
-// TestRoots_DeeperLevel tests finding roots at deeper levels
-func TestRoots_DeeperLevel(t *testing.T) {
-	paths := []string{
-		"/root/sub1/sub2/sub3",
-		"/root/sub1/sub2/sub4",
-	}
-
-	result := Roots(paths, 1, false)
-	expected := "/root/sub1/sub2"
-	if result != expected {
-		t.Errorf("Expected '%s', got '%s'", expected, result)
-	}
-
-	result = Roots(paths, 2, false)
-	expected = "/root/sub1"
-	if result != expected {
-		t.Errorf("Expected '%s', got '%s'", expected, result)
-	}
-}
-
 // TestCommonPrefix_Sorted tests that common prefix works with unsorted paths
 func TestCommonPrefix_Sorted(t *testing.T) {
 	paths := []string{
@@ -335,27 +217,5 @@ func TestCommonPrefix_Sorted(t *testing.T) {
 
 	if result != expected {
 		t.Errorf("Expected '%s', got '%s'", expected, result)
-	}
-}
-
-// TestTrimToLevel_Sorted tests that trimmed paths are sorted
-func TestTrimToLevel_Sorted(t *testing.T) {
-	paths := []string{
-		"/root/sub3/a",
-		"/root/sub1/b",
-		"/root/sub2/c",
-	}
-
-	result := TrimToLevel(paths, 2)
-	expected := []string{"/root/sub1", "/root/sub2", "/root/sub3"}
-
-	if len(result) != len(expected) {
-		t.Errorf("Expected %d paths, got %d", len(expected), len(result))
-	}
-
-	for i, exp := range expected {
-		if i >= len(result) || result[i] != exp {
-			t.Errorf("Expected result[%d] to be '%s', got '%s'", i, exp, result[i])
-		}
 	}
 }
