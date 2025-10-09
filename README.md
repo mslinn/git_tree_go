@@ -89,6 +89,21 @@ The easiest way to get started is to use the `git-treeconfig` command.
 This interactive tool will ask you a few questions
 and create a configuration file for you at `~/.treeconfig.yml`.
 
+This is the help message produced by `git-treeconfig -h`:
+
+```text
+git-treeconfig - Configure git-tree settings
+This utility creates a configuration file at $HOME/.treeconfig.yml
+Press Enter to accept the default value in brackets.
+
+Usage: git-treeconfig [OPTIONS]
+
+OPTIONS:
+  -h   Show this help message
+```
+
+Lets use `git-treeconfig` now.
+
 ```shell
 $ git-treeconfig
 Welcome to git-tree configuration.
@@ -105,7 +120,6 @@ Configuration saved to /home/user/.treeconfig.yml
 ### Configuration File
 
 The `git-treeconfig` command generates a YAML file (`~/.treeconfig.yml`) that you can also edit manually.
-
 Here is an example:
 
 ```yaml
@@ -131,23 +145,25 @@ They must be prefixed with `GIT_TREE_` and be in uppercase.
 
 ### Dependent Package Maintenance
 
-One of my directory trees holds Jekyll plugins, packaged as 25 gems.
+A directory tree holds Jekyll plugins, packaged as 25 gems.
 They depend on one another, and must be built in a particular order.
-Sometimes an operation must be performed on all of the plugins, and then rebuild them all.
+Sometimes an operation must be performed on all of the plugins,
+and then all the gems must be rebuilt.
 
-Most operations do not require that the projects be processed in any particular order, however
-the build process must be invoked on the dependencies first.
+Most operations do not require that the projects be processed in
+any particular order, however the build process must be invoked on the
+primary dependencies first.
 It is quite tedious to do this 25 times, over and over.
 
-This use case is now fulfilled by the `git-exec` command provided by the `git-tree-go` package.
+This use case is fulfilled by the `git-exec` command provided by the `git-tree-go` package.
 See below for further details.
 
 
 ### Replicating Trees of Git Repositories
 
-Whenever I set up an operating system for a new development computer,
+Whenever setting up an operating system for a new development computer,
 one of the tedious tasks that must be performed is to replicate
-the directory trees of Git repositories.
+one or more directory trees of Git repositories.
 
 It is a bad idea to attempt to copy an entire Git repository between computers,
 because the `.git` directories within them can be quite large.
@@ -160,15 +176,16 @@ Git repos store the entire development history of the project in their `.git` di
 so as they accumulate history they eventually become much larger than the
 code that is checked out at any given time.
 
-This use case is fulfilled by the `git-replicate` and `git-evars` commands provided by this package.
+This use case is fulfilled by the `git-replicate` and `git-evars`
+commands provided by this package, working together.
 
 
 ## Usage
 
 ### Single- And Multi-Processing
 
-All of these commands are inherently multi-processed using Go's goroutines.
-They consume up to 75% of the CPU cores that your system can provide.
+All of these commands are default to multi-processing mode using
+[goroutines](https://dev.to/gophers/what-are-goroutines-and-how-are-they-scheduled-2nj3).
 You may notice that your computer's fan gets louder when you run these commands on large numbers of Git repositories.
 
 For builds and other sequential tasks, however, multiprocessing is inappropriate.
@@ -182,7 +199,7 @@ because performing most tasks take longer to perform in sequence than performing
 
 ### `git-commitAll`
 
-This is the help message:
+This is the help message produced by `git-commitAll -h`:
 
 ```text
 git-commitAll - Recursively commits and pushes changes in all git repositories under the specified roots.
@@ -283,7 +300,8 @@ export ebooks=$sites/ebooks
 ...
 ```
 
-### `git-exec` Usage
+
+### `git-exec`
 
 This is the help message produced by `git-exec -h`:
 
@@ -341,12 +359,10 @@ $ git-exec '$my_plugins' 'if [ -d demo ]; then realpath demo; fi'
 
 ### `git-replicate`
 
-This command generates a shell script to replicate a tree of git repositories.
-
 This is the help message produced by `git-exec -h`:
 
 ```text
-git-replicate - Replicates trees of git repositories and writes a bash script to STDOUT.
+git-replicate - Writes a bash script to STDOUT for replicating trees of Git repositories.
 
 If no directories are given, uses default roots (sites, sitesUbuntu, work) as roots.
 The script clones the repositories and replicates any remotes.
@@ -377,6 +393,7 @@ $ git-replicate '$work $sites' > replicate.sh    # Replicate repos under $work a
 
 When `git-replicate` completes, edit the generated script to suit, then
 copy it to the target machine and run it.
+
 
 ### `git-update`
 
@@ -416,221 +433,7 @@ $ git-update $work /path/to/git/tree
 
 ## Development
 
-### Makefile
-
-[`Makefile`](https://en.wikipedia.org/wiki/Make_(software))
-automates common development tasks for this Go project.
-The main commands are:
-
-```shell
-make         # Short form for 'make all'.
-make all     # The default command. It formats, vets, and builds all the Go commands.
-make build   # Compile all commands and places the binaries in the bin/ directory.
-make clean   # Delete the bin/ directory to clean up build files.
-make fmt     # Format all Go code in the project.
-make help    # Display a help message with all available commands.
-make install # Install all the commands to your GOPATH/bin, making them executable from your terminal.
-make test    # Run all the tests in the project.
-make tidy    # Tidy the go.mod and go.sum files.
-make vet     # Analyze the code for potential issues.
-```
-
-
-### Project Structure
-
-```text
-git_tree_go/
-├── cmd/                    # Command implementations
-│   ├── git-commitAll/
-│   ├── git-evars/
-│   ├── git-exec/
-│   ├── git-replicate/
-│   ├── git-treeconfig/
-│   └── git-update/
-├── internal/               # Internal packages
-│   ├── abstract_command.go
-│   ├── config.go
-│   ├── roots.go
-│   ├── git_tree_walker.go
-│   ├── log.go
-│   ├── task.go
-│   ├── thread_pool.go
-│   └── zowee_optimizer.go
-├── go.mod
-├── go.sum
-├── Makefile
-└── README.md
-```
-
-
-### Building
-
-Build just one command:
-
-```shell
-make git-commitAll
-make git-evars
-make git-exec
-make git-replicate
-make git-treeconfig
-make git-update
-```
-
-Example:
-
-```shell
-$ make
-Formatting code...
-internal/util.go
-internal/task.go
-Vetting code...
-Building all commands...
-  Building git-commitAll...
-  Building git-evars...
-  Building git-exec...
-  Building git-replicate...
-  Building git-treeconfig...
-  Building git-update...
-Build complete!
-```
-
-### Running
-
-Commands such as `git-exec` can be run several ways.
-The most direct is to use `go run` and point to the source of the file to compile and run.
-Unlike `go build`, `go run` does not leave a permanent executable file in your project directory.
-
-```shell
-$ go run ./cmd/git-exec $work pwd
-```
-
-Alternatively, build everything to `bin/` first:
-
-```shell
-$ make build
-$ ./bin/git-exec $work pwd
-```
-
-Alternatively, build just the command to `bin/` first:
-
-```shell
-$ make git-exec
-$ ./bin/git-exec $work pwd
-```
-
-
-### Testing
-
-Make and run:
-
-```shell
-$ make test
-Running tests...
-?       git-tree-go/cmd/git-commitAll   [no test files]
-?       git-tree-go/cmd/git-evars       [no test files]
-?       git-tree-go/cmd/git-exec        [no test files]
-?       git-tree-go/cmd/git-replicate   [no test files]
-?       git-tree-go/cmd/git-treeconfig  [no test files]
-?       git-tree-go/cmd/git-update      [no test files]
-=== RUN   TestAbstractCommand_Initialization
---- PASS: TestAbstractCommand_Initialization (0.00s)
-=== RUN   TestAbstractCommand_ArgumentHandling
---- PASS: TestAbstractCommand_ArgumentHandling (0.00s)
-=== RUN   TestAbstractCommand_ParseCommonFlags_Quiet
---- PASS: TestAbstractCommand_ParseCommonFlags_Quiet (0.00s)
-=== RUN   TestAbstractCommand_ParseCommonFlags_Serial
---- PASS: TestAbstractCommand_ParseCommonFlags_Serial (0.00s)
-=== RUN   TestAbstractCommand_ParseCommonFlags_Verbose
-FAIL    git-tree-go/internal    0.003s
-FAIL
-make: *** [Makefile:49: test] Error 1
-```
-
-Or just look at failures:
-
-```shell
-$ make test | grep FAIL
---- FAIL: TestRoots_Level1_OnePathWithManySlashes (0.00s)
---- FAIL: TestRoots_DeeperLevel (0.00s)
---- FAIL: TestZoweeOptimizer_MultipleBranchesFromCommonRoot (0.00s)
---- FAIL: TestZoweeOptimizer_ComplexNesting (0.00s)
-FAIL
-FAIL    git-tree-go/internal    0.677s
-FAIL
-```
-
-Run all tests:
-
-```shell
-$ make test:all
-```
-
-Run tests for a specific command:
-
-```shell
-$ go test ./cmd/git-commitAll/
-$ go test ./cmd/git-exec/
-$ go test ./cmd/git-evars/
-$ go test ./cmd/git-replicate/
-$ go test ./cmd/git-update/
-```
-
-Run with verbose output:
-
-```shell
-$ go test -v ./cmd/...
-```
-
-Skip integration tests (short mode):
-
-```shell
-$ go test -short ./cmd/...
-```
-
-
-
-### Creating Releases
-
-This project uses GoReleaser and GitHub Actions for automated releases. To create a new release:
-
-
-#### Using the Release Script
-
-The easiest way to create a release:
-
-```shell
-$ ./scripts/release.sh 1.2.3
-```
-
-This script will:
-
-- Validate the version format
-- Check that your working directory is clean
-- Run tests
-- Create and push a version tag
-- Trigger the GitHub Actions release workflow
-
-
-#### Manual Release
-
-Alternatively, create and push a tag manually:
-
-```shell
-$ git tag -a v1.2.3 -m "Release v1.2.3"
-$ git push origin v1.2.3
-```
-
-#### What Happens Next
-
-Once the tag is pushed, GitHub Actions will automatically:
-
-- Build binaries for all platforms
-  (Linux, macOS, Windows on amd64 and arm64)
-- Create a GitHub release
-- Upload all binaries and checksums
-- Generate release notes
-
-For more details, see [RELEASING.md](RELEASING.md).
+See [DEVELOPMENT.md](DEVELOPMENT.md).
 
 
 ## License
