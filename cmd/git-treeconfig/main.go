@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
@@ -10,7 +11,27 @@ import (
 	"git-tree-go/internal"
 )
 
+func showHelp() {
+	fmt.Println("git-treeconfig - Configure git-tree settings")
+	fmt.Println()
+	fmt.Println("Usage: git-treeconfig [options]")
+	fmt.Println()
+	fmt.Println("Options:")
+	fmt.Println("  -h    Show this help message")
+	fmt.Println()
+	fmt.Println("This utility helps you create a configuration file at $HOME/.treeconfig.yml")
+	os.Exit(0)
+}
+
 func main() {
+	// Parse command-line flags
+	helpFlag := flag.Bool("h", false, "Show help message")
+	flag.Parse()
+
+	if *helpFlag {
+		showHelp()
+	}
+
 	config := internal.NewConfig()
 	scanner := bufio.NewScanner(os.Stdin)
 
@@ -21,9 +42,10 @@ func main() {
 	}
 
 	configPath := fmt.Sprintf("%s/.treeconfig.yml", home)
+	displayPath := strings.Replace(configPath, home, "$HOME", 1)
 
 	fmt.Println("Welcome to git-tree configuration.")
-	fmt.Printf("This utility will help you create a configuration file at: %s\n", configPath)
+	fmt.Printf("This utility will help you create a configuration file at: %s\n", displayPath)
 	fmt.Println("Press Enter to accept the default value in brackets.")
 	fmt.Println()
 
@@ -74,5 +96,5 @@ func main() {
 	}
 
 	fmt.Println()
-	fmt.Printf("\033[32mConfiguration saved to %s\033[0m\n", configPath)
+	fmt.Printf("\033[32mConfiguration saved to %s\033[0m\n", displayPath)
 }

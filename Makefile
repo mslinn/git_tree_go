@@ -53,6 +53,8 @@ fmt:
 	@$(GOFMT) ./...
 
 vet:
+	@echo "Checking Go version..."
+	@go version | grep -qE 'go1\.(2[4-9]|[3-9][0-9])' || (echo "Error: Go 1.24 or later is required" && exit 1)
 	@echo "Vetting code..."
 	@$(GOVET) ./...
 
