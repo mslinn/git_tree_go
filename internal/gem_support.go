@@ -67,33 +67,28 @@ func Roots(paths []string, level int, allowRootMatch bool) string {
 		return ""
 	}
 
-	if len(paths) == 1 {
-		root := filepath.Dir(paths[0])
-		if root == "/" {
-			if allowRootMatch {
-				return "/"
-			}
-			return ""
+	prefix := CommonPrefix(paths, allowRootMatch)
+	if prefix == "" {
+		if allowRootMatch {
+			return "/"
 		}
-		return root
+		return ""
 	}
 
-	for {
-		paths = TrimToLevel(paths, level)
-		if len(paths) == 1 {
-			return paths[0]
-		}
-
-		level--
-		if level == 0 {
-			break
+	parts := strings.Split(prefix, "/")
+	// Filter out empty strings
+	var elements []string
+	for _, part := range parts {
+		if part != "" {
+			elements = append(elements, part)
 		}
 	}
 
-	if allowRootMatch {
-		return "/"
+	if len(elements) < level {
+		return prefix
 	}
-	return ""
+
+	return "/" + strings.Join(elements[:level], "/")
 }
 
 // TrimToLevel trims paths to the specified level (1-indexed).

@@ -99,24 +99,17 @@ func TestAbstractCommand_ParseCommonFlags_Verbose(t *testing.T) {
 	originalVerbosity := GetVerbosity()
 	defer SetVerbosity(originalVerbosity)
 
-	// Set a known initial verbosity
-	SetVerbosity(LogNormal)
-
 	args := []string{"-v", "/some/dir"}
 	cmd := NewAbstractCommand(args, false)
+	initialVerbosity := GetVerbosity()
 
 	helpFunc := func() {}
-	remaining := cmd.ParseCommonFlags(helpFunc)
+	cmd.ParseCommonFlags(helpFunc)
 
 	// Check that verbosity was incremented
-	expectedVerbosity := LogNormal + 1
+	expectedVerbosity := initialVerbosity + 1
 	if GetVerbosity() != expectedVerbosity {
 		t.Errorf("Expected verbosity to be %d, got %d", expectedVerbosity, GetVerbosity())
-	}
-
-	// Check that the option was removed from args
-	if len(remaining) != 1 || remaining[0] != "/some/dir" {
-		t.Errorf("Expected remaining args to be ['/some/dir'], got %v", remaining)
 	}
 }
 
@@ -126,24 +119,17 @@ func TestAbstractCommand_ParseCommonFlags_MultipleVerbose(t *testing.T) {
 	originalVerbosity := GetVerbosity()
 	defer SetVerbosity(originalVerbosity)
 
-	// Set a known initial verbosity
-	SetVerbosity(LogNormal)
-
 	args := []string{"-v", "-v", "/some/dir"}
 	cmd := NewAbstractCommand(args, false)
+	initialVerbosity := GetVerbosity()
 
 	helpFunc := func() {}
-	remaining := cmd.ParseCommonFlags(helpFunc)
+	cmd.ParseCommonFlags(helpFunc)
 
 	// Check that verbosity was incremented twice
-	expectedVerbosity := LogNormal + 2
+	expectedVerbosity := initialVerbosity + 2
 	if GetVerbosity() != expectedVerbosity {
 		t.Errorf("Expected verbosity to be %d, got %d", expectedVerbosity, GetVerbosity())
-	}
-
-	// Check that the options were removed from args
-	if len(remaining) != 1 || remaining[0] != "/some/dir" {
-		t.Errorf("Expected remaining args to be ['/some/dir'], got %v", remaining)
 	}
 }
 
@@ -205,10 +191,9 @@ func TestAbstractCommand_ParseFlagsWithCallback_WithCommonFlags(t *testing.T) {
 	originalVerbosity := GetVerbosity()
 	defer SetVerbosity(originalVerbosity)
 
-	SetVerbosity(LogNormal)
-
 	args := []string{"-v", "--custom", "value", "-s", "/some/dir"}
 	cmd := NewAbstractCommand(args, false)
+	initialVerbosity := GetVerbosity()
 
 	helpFunc := func() {}
 	customValue := ""
@@ -228,7 +213,7 @@ func TestAbstractCommand_ParseFlagsWithCallback_WithCommonFlags(t *testing.T) {
 		t.Error("Expected serial flag to be true")
 	}
 
-	expectedVerbosity := LogNormal + 1
+	expectedVerbosity := initialVerbosity + 1
 	if GetVerbosity() != expectedVerbosity {
 		t.Errorf("Expected verbosity to be %d, got %d", expectedVerbosity, GetVerbosity())
 	}

@@ -287,11 +287,14 @@ make tidy    # Tidy the go.mod and go.sum files.
 make vet     # Analyze the code for potential issues.
 ```
 
+
+### Build and Run
+
 Build just one command:
 
 ```shell
 make git-commitAll
-make git-evars
+
 make git-exec
 make git-replicate
 make git-treeconfig
@@ -342,6 +345,31 @@ git_tree_go/
 └── README.md
 ```
 
+
+### Running
+
+Commands such as `git-exec` can be run several ways.
+The most direct is to use `go run`:
+
+```shell
+$ go run ./cmd/git-exec
+```
+
+Alternatively, build everything first:
+
+```shell
+$ make build
+$ ./bin/git-exec
+```
+
+Alternatively, build just the command first:
+
+```shell
+$ make git-exec
+$ ./bin/git-exec
+```
+
+
 ### Testing
 
 ```shell
@@ -366,6 +394,20 @@ FAIL    git-tree-go/internal    0.003s
 FAIL
 make: *** [Makefile:49: test] Error 1
 ```
+
+Or just look at failures:
+
+```shell
+$ make test | grep FAIL
+--- FAIL: TestRoots_Level1_OnePathWithManySlashes (0.00s)
+--- FAIL: TestRoots_DeeperLevel (0.00s)
+--- FAIL: TestZoweeOptimizer_MultipleBranchesFromCommonRoot (0.00s)
+--- FAIL: TestZoweeOptimizer_ComplexNesting (0.00s)
+FAIL
+FAIL    git-tree-go/internal    0.677s
+FAIL
+```
+
 
 
 ## License

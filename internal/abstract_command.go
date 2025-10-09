@@ -28,9 +28,30 @@ func NewAbstractCommand(args []string, allowEmptyArgs bool) *AbstractCommand {
 	return cmd
 }
 
-// ParseCommonFlags parses common flags like -h, -q, -v, -s.
+// handleVerboseFlag manually counts and removes verbose flags.
+func (cmd *AbstractCommand) handleVerboseFlag() {
+	verboseCount := 0
+	remainingArgs := []string{}
+	for _, arg := range cmd.Args {
+		if arg == "-v" || arg == "--verbose" {
+			verboseCount++
+		} else {
+			remainingArgs = append(remainingArgs, arg)
+		}
+	}
+
+	if verboseCount > 0 {
+		SetVerbosity(GetVerbosity() + verboseCount)
+	}
+	cmd.Args = remainingArgs
+}
+
+// ParseCommonFlags parses common flags like -h, -q, -s.
 // Returns the remaining non-flag arguments.
 func (cmd *AbstractCommand) ParseCommonFlags(helpFunc func()) []string {
+	// Manually handle verbose flags before parsing other flags
+	cmd.handleVerboseFlag()
+
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	help := fs.Bool("h", false, "Show this help message and exit")
@@ -41,16 +62,6 @@ func (cmd *AbstractCommand) ParseCommonFlags(helpFunc func()) []string {
 
 	serial := fs.Bool("s", false, "Run tasks serially in a single thread")
 	fs.BoolVar(serial, "serial", false, "Run tasks serially in a single thread")
-
-	verboseCount := 0
-	fs.Func("v", "Increase verbosity (can be used multiple times)", func(s string) error {
-		verboseCount++
-		return nil
-	})
-	fs.Func("verbose", "Increase verbosity (can be used multiple times)", func(s string) error {
-		verboseCount++
-		return nil
-	})
 
 	// Parse the flags
 	if err := fs.Parse(cmd.Args); err != nil {
@@ -67,11 +78,6 @@ func (cmd *AbstractCommand) ParseCommonFlags(helpFunc func()) []string {
 	// Handle quiet
 	if *quiet {
 		SetVerbosity(LogQuiet)
-	}
-
-	// Handle verbose
-	if verboseCount > 0 {
-		SetVerbosity(GetVerbosity() + verboseCount)
 	}
 
 	// Handle serial
@@ -93,6 +99,9 @@ func (cmd *AbstractCommand) ParseCommonFlags(helpFunc func()) []string {
 // ParseFlagsWithCallback parses flags with a custom callback for additional flags.
 // The callback receives a FlagSet to add custom flags.
 func (cmd *AbstractCommand) ParseFlagsWithCallback(helpFunc func(), callback func(*flag.FlagSet)) []string {
+	// Manually handle verbose flags before parsing other flags
+	cmd.handleVerboseFlag()
+
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	help := fs.Bool("h", false, "Show this help message and exit")
@@ -103,16 +112,6 @@ func (cmd *AbstractCommand) ParseFlagsWithCallback(helpFunc func(), callback fun
 
 	serial := fs.Bool("s", false, "Run tasks serially in a single thread")
 	fs.BoolVar(serial, "serial", false, "Run tasks serially in a single thread")
-
-	verboseCount := 0
-	fs.Func("v", "Increase verbosity (can be used multiple times)", func(s string) error {
-		verboseCount++
-		return nil
-	})
-	fs.Func("verbose", "Increase verbosity (can be used multiple times)", func(s string) error {
-		verboseCount++
-		return nil
-	})
 
 	// Allow custom flags
 	if callback != nil {
@@ -134,11 +133,6 @@ func (cmd *AbstractCommand) ParseFlagsWithCallback(helpFunc func(), callback fun
 	// Handle quiet
 	if *quiet {
 		SetVerbosity(LogQuiet)
-	}
-
-	// Handle verbose
-	if verboseCount > 0 {
-		SetVerbosity(GetVerbosity() + verboseCount)
 	}
 
 	// Handle serial

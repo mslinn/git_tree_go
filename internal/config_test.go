@@ -8,6 +8,18 @@ import (
 
 // TestConfig_NewConfig_Defaults tests default configuration values
 func TestConfig_NewConfig_Defaults(t *testing.T) {
+	// Create a temporary directory
+	tmpDir, err := os.MkdirTemp("", "git-tree-test")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Override home directory for this test
+	originalHome := os.Getenv("HOME")
+	os.Setenv("HOME", tmpDir)
+	defer os.Setenv("HOME", originalHome)
+
 	// Clear any environment variables that might affect the test
 	os.Unsetenv("GIT_TREE_GIT_TIMEOUT")
 	os.Unsetenv("GIT_TREE_VERBOSITY")
@@ -71,6 +83,18 @@ func TestConfig_EnvironmentVariables(t *testing.T) {
 
 // TestConfig_InvalidEnvironmentVariables tests that invalid env vars are ignored
 func TestConfig_InvalidEnvironmentVariables(t *testing.T) {
+	// Create a temporary directory
+	tmpDir, err := os.MkdirTemp("", "git-tree-test")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Override home directory for this test
+	originalHome := os.Getenv("HOME")
+	os.Setenv("HOME", tmpDir)
+	defer os.Setenv("HOME", originalHome)
+
 	// Set invalid environment variables
 	os.Setenv("GIT_TREE_GIT_TIMEOUT", "not-a-number")
 	os.Setenv("GIT_TREE_VERBOSITY", "also-not-a-number")
