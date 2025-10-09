@@ -2,7 +2,7 @@ package main
 
 import (
   "fmt"
-	"github.com/MakeNowJust/heredoc"
+  "github.com/MakeNowJust/heredoc"
   "os"
   "os/exec"
   "strings"
@@ -57,36 +57,36 @@ func main() {
 func showHelp() {
   config := internal.NewConfig()
   fmt.Printf(heredoc.Doc(`
-	  git-exec - Executes an arbitrary shell command for each repository.
+    git-exec - Executes an arbitrary shell command for each repository.
 
-		If no arguments are given, uses default roots (%s) as roots.
-		These environment variables point to roots of git repository trees to walk.
-		Skips directories containing a .ignore file, and all subdirectories.
+    If no arguments are given, uses default roots (%s) as roots.
+    These environment variables point to roots of git repository trees to walk.
+    Skips directories containing a .ignore file, and all subdirectories.
 
-		Environment variables that point to the roots of git repository trees must have been exported, for example:
+    Environment variables that point to the roots of git repository trees must have been exported, for example:
 
-			$ export work=$HOME/work
+      $ export work=$HOME/work
 
-		Usage: git-exec [OPTIONS] [ROOTS...] SHELL_COMMAND
+    Usage: git-exec [OPTIONS] [ROOTS...] SHELL_COMMAND
 
-		Options:
-			-h, --help           Show this help message and exit.
-			-q, --quiet          Suppress normal output, only show errors.
-			-s, --serial         Run tasks serially in a single thread in the order specified.
-			-v, --verbose        Increase verbosity. Can be used multiple times (e.g., -v, -vv).
+    Options:
+      -h, --help           Show this help message and exit.
+      -q, --quiet          Suppress normal output, only show errors.
+      -s, --serial         Run tasks serially in a single thread in the order specified.
+      -v, --verbose        Increase verbosity. Can be used multiple times (e.g., -v, -vv).
 
-		ROOTS can be directory names or environment variable references (e.g., '$work').
-		Multiple roots can be specified in a single quoted string.
+    ROOTS can be directory names or environment variable references (e.g., '$work').
+    Multiple roots can be specified in a single quoted string.
 
-		Usage examples:
-		1) For all git repositories under $sites, display their root directories:
-			$ git-exec '$sites' pwd
+    Usage examples:
+    1) For all git repositories under $sites, display their root directories:
+      $ git-exec '$sites' pwd
 
-		2) For all git repositories under the current directory and $my_plugins, list the demo/ subdirectory if it exists.
-			$ git-exec '. $my_plugins' 'if [ -d demo ]; then realpath demo; fi'
+    2) For all git repositories under the current directory and $my_plugins, list the demo/ subdirectory if it exists.
+      $ git-exec '. $my_plugins' 'if [ -d demo ]; then realpath demo; fi'
 
-		3) For all subdirectories of the current directory, update Gemfile.lock and install a local copy of the gem:
-			$ git-exec . 'bundle update && rake install'
+    3) For all subdirectories of the current directory, update Gemfile.lock and install a local copy of the gem:
+      $ git-exec . 'bundle update && rake install'
   `), strings.Join(config.DefaultRoots, ", "))
 }
 

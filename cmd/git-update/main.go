@@ -3,7 +3,7 @@ package main
 import (
   "context"
   "fmt"
-	"github.com/MakeNowJust/heredoc"
+  "github.com/MakeNowJust/heredoc"
   "os"
   "os/exec"
   "strings"
@@ -34,33 +34,33 @@ func main() {
 func showHelp() {
   config := internal.NewConfig()
   fmt.Printf(heredoc.Doc(`
-	  git-update - Recursively updates trees of git repositories.
+    git-update - Recursively updates trees of git repositories.
 
-		If no arguments are given, uses default roots (%s) as roots.
-		These environment variables point to roots of git repository trees to walk.
-		Skips directories containing a .ignore file, and all subdirectories.
+    If no arguments are given, uses default roots (%s) as roots.
+    These environment variables point to roots of git repository trees to walk.
+    Skips directories containing a .ignore file, and all subdirectories.
 
-		Environment variables that point to the roots of git repository trees must have been exported, for example:
+    Environment variables that point to the roots of git repository trees must have been exported, for example:
 
-			$ export work=$HOME/work
+      $ export work=$HOME/work
 
-		Usage: git-update [OPTIONS] [ROOTS...]
+    Usage: git-update [OPTIONS] [ROOTS...]
 
-		OPTIONS:
-			-h, --help           Show this help message and exit.
-			-q, --quiet          Suppress normal output, only show errors.
-			-s, --serial         Run tasks serially in a single thread.
-			-v, --verbose        Increase verbosity. Can be used multiple times (e.g., -v, -vv).
+    OPTIONS:
+      -h, --help           Show this help message and exit.
+      -q, --quiet          Suppress normal output, only show errors.
+      -s, --serial         Run tasks serially in a single thread.
+      -v, --verbose        Increase verbosity. Can be used multiple times (e.g., -v, -vv).
 
-		ROOTS:
-		When specifying roots, directory paths can be specified, and environment variables can be used, preceded by a dollar sign.
+    ROOTS:
+    When specifying roots, directory paths can be specified, and environment variables can be used, preceded by a dollar sign.
 
-		Usage examples:
+    Usage examples:
 
-		$ git-update               # Use default environment variables as roots
-		$ git-update $work $sites  # Use specific environment variables
-		$ git-update $work /path/to/git/tree
-	`), strings.Join(config.DefaultRoots, ", "))
+    $ git-update               # Use default environment variables as roots
+    $ git-update $work $sites  # Use specific environment variables
+    $ git-update $work /path/to/git/tree
+  `), strings.Join(config.DefaultRoots, ", "))
 }
 
 func processRepo(walker *internal.GitTreeWalker, dir string, threadID int, config *internal.Config) {

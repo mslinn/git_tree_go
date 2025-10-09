@@ -31,7 +31,9 @@ func main() {
   helpFlag := flag.Bool("h", false, "Show help message")
   flag.Parse()
 
-  if *helpFlag { showHelp() }
+  if *helpFlag {
+    showHelp()
+  }
 
   config := internal.NewConfig()
   scanner := bufio.NewScanner(os.Stdin)
@@ -46,9 +48,9 @@ func main() {
   displayPath := strings.Replace(configPath, home, "$HOME", 1)
 
   fmt.Printf(heredoc.Doc(`
-		This command creates a configuration file for the other git-tree commands in %s.
+    This command creates a configuration file for the other git-tree commands in %s.
 
-		In the following dialog, press Enter to accept default values presented within brackets.
+    In the following dialog, press Enter to accept default values presented within brackets.
   `), displayPath)
 
   // Git timeout

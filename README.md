@@ -375,6 +375,8 @@ $ ./bin/git-exec $work pwd
 
 ### Testing
 
+Make and run:
+
 ```shell
 $ make test
 Running tests...
@@ -411,6 +413,33 @@ FAIL    git-tree-go/internal    0.677s
 FAIL
 ```
 
+Run all tests:
+
+```shell
+$ make test:all
+```
+
+Run tests for a specific command:
+
+```shell
+$ go test ./cmd/git-commitAll/
+$ go test ./cmd/git-exec/
+$ go test ./cmd/git-evars/
+$ go test ./cmd/git-replicate/
+$ go test ./cmd/git-update/
+```
+
+Run with verbose output:
+
+```shell
+$ go test -v ./cmd/...
+```
+
+Skip integration tests (short mode):
+
+```shell
+$ go test -short ./cmd/...
+```
 
 
 ## License

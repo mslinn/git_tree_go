@@ -31,7 +31,6 @@ func TestZoweeOptimizer_SimpleNestedStructure(t *testing.T) {
   }
 }
 
-
 // TestZoweeOptimizer_UnrelatedPaths tests optimization of unrelated paths
 func TestZoweeOptimizer_UnrelatedPaths(t *testing.T) {
   optimizer := NewZoweeOptimizer(nil)

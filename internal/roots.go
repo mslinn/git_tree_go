@@ -91,8 +91,6 @@ func Roots(paths []string, level int, allowRootMatch bool) string {
   return "/" + strings.Join(elements[:level], "/")
 }
 
-
-
 // DerefSymlink returns the real path of a symlink.
 func DerefSymlink(symlink string) (string, error) {
   realPath, err := filepath.EvalSymlinks(symlink)

@@ -2,7 +2,7 @@ package main
 
 import (
   "fmt"
-	"github.com/MakeNowJust/heredoc"
+  "github.com/MakeNowJust/heredoc"
   "os"
   "path/filepath"
   "strings"
@@ -47,26 +47,26 @@ func main() {
 func showHelp() {
   config := internal.NewConfig()
   fmt.Printf(heredoc.Doc(`
-	  git-replicate - Replicates trees of git repositories and writes a bash script to STDOUT.
+    git-replicate - Replicates trees of git repositories and writes a bash script to STDOUT.
 
-		If no directories are given, uses default roots (%s) as roots.
-		The script clones the repositories and replicates any remotes.
-		Skips directories containing a .ignore file.
+    If no directories are given, uses default roots (%s) as roots.
+    The script clones the repositories and replicates any remotes.
+    Skips directories containing a .ignore file.
 
-		Options:
-			-h, --help           Show this help message and exit.
-			-q, --quiet          Suppress normal output, only show errors.
-			-v, --verbose        Increase verbosity. Can be used multiple times (e.g., -v, -vv).
+    Options:
+      -h, --help           Show this help message and exit.
+      -q, --quiet          Suppress normal output, only show errors.
+      -v, --verbose        Increase verbosity. Can be used multiple times (e.g., -v, -vv).
 
-		Usage: git-replicate [OPTIONS] [ROOTS...]
+    Usage: git-replicate [OPTIONS] [ROOTS...]
 
-		ROOTS can be directory names or environment variable references (e.g., '$work').
-		Multiple roots can be specified in a single quoted string.
+    ROOTS can be directory names or environment variable references (e.g., '$work').
+    Multiple roots can be specified in a single quoted string.
 
-		Usage examples:
-		$ git-replicate '$work'
-		$ git-replicate '$work $sites'
-	`), strings.Join(config.DefaultRoots, ", "))
+    Usage examples:
+    $ git-replicate '$work'
+    $ git-replicate '$work $sites'
+  `), strings.Join(config.DefaultRoots, ", "))
 }
 
 func replicateOne(dir, rootArg string, walker *internal.GitTreeWalker) []string {
