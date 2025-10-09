@@ -1,10 +1,10 @@
 # `git-tree-go`
 
 This Go package installs commands that walk one or more git directory trees and
-act on each repository.
-Directories containing a file called `.ignore` are ignored.
-Ignoring a directory means all subdirectories are also ignored.
+acts on each repository.
+Directories containing a file called `.ignore` are ignored, as well as all subdirectories.
 Multiple goroutines are used to dramatically boost performance.
+
 
 ## Commands
 
@@ -14,16 +14,16 @@ Multiple goroutines are used to dramatically boost performance.
 - The `git-evars` command writes a script that defines environment variables
   pointing to each git repository.
 
-- The `git-exec` command executes an arbitrary bash command for each repository.
+- The `git-exec` command executes an arbitrary shell command for each repository.
 
-- The `git-replicate` command writes a script that clones the repos in the tree,
+- The `git-replicate` command writes a script that clones the repositories in the tree,
   and adds any defined remotes.
 
   - Any git repos that have already been cloned into the target directory tree
     are skipped. This means you can rerun `git-replicate` as many times as you
     want, without ill effects.
 
-  - All remotes in each repo are replicated.
+  - All remotes in each repository are replicated.
 
 - The `git-update` command updates each repository in the trees.
 
@@ -48,6 +48,23 @@ Download, build and install to `$GOPATH/bin` like this:
 $ git clone https://github.com/mslinn/git_tree_go.git
 $ cd git_tree_go
 $ make install
+```
+
+For Ubuntu Linux, the above places executables in `$HOME/go/bin/`.
+
+
+### Pre-built Binaries
+
+Pre-built binaries for Linux, macOS, and Windows are available on the [Releases page](https://github.com/mslinn/git_tree_go/releases).
+
+Download the appropriate archive for your platform and place the executables somewhere on the `PATH`:
+
+```shell
+# Example for Linux amd64
+$ VER=1.0.0
+$ wget https://github.com/mslinn/git_tree_go/releases/download/v${VER}/git_tree_go_${VER}_Linux_x86_64.tar.gz
+$ tar -xzf git_tree_go_${VER}_Linux_x86_64.tar.gz
+$ sudo mv git-* /usr/local/bin/
 ```
 
 ## Configuration
@@ -162,6 +179,8 @@ because performing most tasks take longer to perform in sequence than performing
 
 ### `git-commitAll`
 
+This is the help message:
+
 ```text
 git-commitAll - Recursively commits and pushes changes in all git repositories under the specified roots.
 If no directories are given, uses default roots (sites, sitesUbuntu, work) as roots.
@@ -169,20 +188,20 @@ Skips directories containing a .ignore file, and all subdirectories.
 Repositories in a detached HEAD state are skipped.
 
 Options:
-  -h, --help                Show this help message and exit.
-  -m, --message MESSAGE     Use the given string as the commit message.
-                            (default: "-")
-  -q, --quiet               Suppress normal output, only show errors.
-  -s, --serial              Run tasks serially in a single thread in the order specified.
-  -v, --verbose             Increase verbosity. Can be used multiple times (e.g., -v, -vv).
+  -h, --help              Show this help message and exit.
+  -m, --message MESSAGE   Use the given string as the commit message.
+                          (default: "-")
+  -q, --quiet             Suppress normal output, only show errors.
+  -s, --serial            Run tasks serially in a single thread in the order specified.
+  -v, --verbose           Increase verbosity. Can be used multiple times (e.g., -v, -vv).
 
 Usage:
-  git-commitAll [OPTIONS] [DIRECTORY...]
+  git-commitAll [OPTIONS] [ROOTS...]
 
 Usage examples:
-  git-commitAll                                # Commit with default message "-"
-  git-commitAll -m "This is a commit message"  # Commit with a custom message
-  git-commitAll $work $sites                   # Commit in repositories under specific roots
+  git-commitAll                      # Commit default repositories with the default message ("-")
+  git-commitAll -m "Commit message"  # Commit default repositories with the same message
+  git-commitAll $work $sites         # Commit in repositories under specific roots with the default message
 ```
 
 ```shell
@@ -196,14 +215,15 @@ All work is complete.
 ### `git-evars`
 
 The `git-evars` command writes a script that defines environment variables pointing to each git repository.
-This command should be run on the target computer.
+When using this command in conjunction with the `git-replicate` command,
+this command should be run on the target computer.
 
 Only one parameter is required:
 an environment variable reference, pointing to the top-level directory to replicate.
 The environment variable reference must be contained within single quotes to prevent expansion by the shell.
 
 The following appends to any script in the `$work` directory called `.evars`.
-The script defines environment variables that point to each git repo pointed to by `$work`:
+The script defines environment variables that point to each git repository pointed to by `$work`:
 
 ```shell
 $ git-evars '$work' >> $work/.evars
@@ -440,6 +460,51 @@ Skip integration tests (short mode):
 ```shell
 $ go test -short ./cmd/...
 ```
+
+
+
+### Creating Releases
+
+This project uses GoReleaser and GitHub Actions for automated releases. To create a new release:
+
+
+#### Using the Release Script
+
+The easiest way to create a release:
+
+```shell
+$ ./scripts/release.sh 1.2.3
+```
+
+This script will:
+
+- Validate the version format
+- Check that your working directory is clean
+- Run tests
+- Create and push a version tag
+- Trigger the GitHub Actions release workflow
+
+
+#### Manual Release
+
+Alternatively, create and push a tag manually:
+
+```shell
+$ git tag -a v1.2.3 -m "Release v1.2.3"
+$ git push origin v1.2.3
+```
+
+#### What Happens Next
+
+Once the tag is pushed, GitHub Actions will automatically:
+
+- Build binaries for all platforms
+  (Linux, macOS, Windows on amd64 and arm64)
+- Create a GitHub release
+- Upload all binaries and checksums
+- Generate release notes
+
+For more details, see [RELEASING.md](RELEASING.md).
 
 
 ## License
