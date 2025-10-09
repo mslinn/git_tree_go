@@ -304,7 +304,7 @@ git_tree_go/
 ├── internal/               # Internal packages
 │   ├── abstract_command.go
 │   ├── config.go
-│   ├── util.go
+│   ├── roots.go
 │   ├── git_tree_walker.go
 │   ├── log.go
 │   ├── task.go
