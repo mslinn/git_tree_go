@@ -39,18 +39,7 @@ $ go version
 go version go1.24.2 linux/amd64
 ```
 
-
-### Building from Source
-
-Download, build and install to `$GOPATH/bin` like this:
-
-```shell
-$ git clone https://github.com/mslinn/git_tree_go.git
-$ cd git_tree_go
-$ make install
-```
-
-The `Makefile` causes executables to be created in `$HOME/go/bin/`.
+[Install the Go language](https://go.dev/doc/install) if you need to.
 
 
 ### Pre-built Binaries
@@ -66,6 +55,20 @@ $ wget https://github.com/mslinn/git_tree_go/releases/download/v${VER}/git_tree_
 $ tar -xzf git_tree_go_${VER}_Linux_x86_64.tar.gz
 $ sudo mv git-* /usr/local/bin/
 ```
+
+
+### Building from Source
+
+Download, build and install to `$GOPATH/bin` like this:
+
+```shell
+$ git clone https://github.com/mslinn/git_tree_go.git
+$ cd git_tree_go
+$ make install
+```
+
+The `Makefile` causes executables to be created in `$HOME/go/bin/`.
+
 
 ## Configuration
 
@@ -218,15 +221,49 @@ The `git-evars` command writes a script that defines environment variables point
 When using this command in conjunction with the `git-replicate` command,
 this command should be run on the target computer.
 
-Only one parameter is required:
-an environment variable reference, pointing to the top-level directory to replicate.
+This is the help message produced by `git-evars -h`:
+
+```text
+git-evars - Generate bash environment variables for each git repository found under specified directory trees.
+
+Examines trees of git repositories and writes a bash script to STDOUT.
+If no directories are given, uses default roots (sites, sitesUbuntu, work) as roots.
+These environment variables point to roots of git repository trees to walk.
+Skips directories containing a .ignore file, and all subdirectories.
+
+Does not redefine existing environment variables; messages are written to STDERR to indicate environment
+variables that are not redefined.
+
+Environment variables that point to the roots of git repository trees must have been exported, for example:
+
+  $ export work=$HOME/work
+
+Usage: git-evars [OPTIONS] [ROOTS...]
+
+Options:
+  -h, --help           Show this help message and exit.
+  -q, --quiet          Suppress normal output, only show errors.
+  -z, --zowee          Optimize variable definitions for size.
+  -v, --verbose        Increase verbosity. Can be used multiple times (e.g., -v, -vv).
+
+ROOTS can be directory names or environment variable references enclosed within single quotes (e.g., '$work').
 The environment variable reference must be contained within single quotes to prevent expansion by the shell.
+Multiple roots can be specified in a single quoted string.
+
+Usage examples:
+$ git-evars                 # Use default environment variables as roots
+$ git-evars '$work $sites'  # Use specific environment variables
+```
 
 The following appends to any script in the `$work` directory called `.evars`.
 The script defines environment variables that point to each git repository pointed to by `$work`:
 
 ```shell
 $ git-evars '$work' >> $work/.evars
+$ source $work/.evars
+$ cd $snakesHaveMoreFun
+...
+$ cd $camels_get_it_done
 ```
 
 
@@ -248,7 +285,40 @@ export ebooks=$sites/ebooks
 
 ### `git-exec` Usage
 
-The `git-exec` command can be run on any computer.
+This is the help message produced by `git-exec -h`:
+
+```text
+git-exec - Executes an arbitrary shell command for each repository.
+
+If no arguments are given, uses default roots (sites, sitesUbuntu, work) as roots.
+These environment variables point to roots of git repository trees to walk.
+Skips directories containing a .ignore file, and all subdirectories.
+
+Environment variables that point to the roots of git repository trees must have been exported, for example:
+
+  $ export work=$HOME/work
+
+Usage: git-exec [OPTIONS] [ROOTS...] SHELL_COMMAND
+
+Options:
+  -h, --help           Show this help message and exit.
+  -q, --quiet          Suppress normal output, only show errors.
+  -s, --serial         Run tasks serially in a single thread in the order specified.
+  -v, --verbose        Increase verbosity. Can be used multiple times (e.g., -v, -vv).
+
+ROOTS can be directory names or environment variable references (e.g., '$work').
+Multiple roots can be specified in a single quoted string.
+
+Usage examples:
+1) For all git repositories under $sites, display their root directories:
+  $ git-exec '$sites' pwd
+
+2) For all git repositories under the current directory and $my_plugins, list the demo/ subdirectory if it exists.
+  $ git-exec '. $my_plugins' 'if [ -d demo ]; then realpath demo; fi'
+
+3) For all subdirectories of the current directory, update Gemfile.lock and install a local copy of the gem:
+  $ git-exec . 'bundle update && rake install'
+```
 
 #### Example 1
 
@@ -268,10 +338,36 @@ that have a `demo/` subdirectory:
 $ git-exec '$my_plugins' 'if [ -d demo ]; then realpath demo; fi'
 ```
 
-### `git-replicate` Usage
+
+### `git-replicate`
 
 This command generates a shell script to replicate a tree of git repositories.
+
+This is the help message produced by `git-exec -h`:
+
+```text
+git-replicate - Replicates trees of git repositories and writes a bash script to STDOUT.
+
+If no directories are given, uses default roots (sites, sitesUbuntu, work) as roots.
+The script clones the repositories and replicates any remotes.
+Skips directories containing a .ignore file.
+
+Options:
+  -h, --help           Show this help message and exit.
+  -q, --quiet          Suppress normal output, only show errors.
+  -v, --verbose        Increase verbosity. Can be used multiple times (e.g., -v, -vv).
+
+Usage: git-replicate [OPTIONS] [ROOTS...]
+
 ROOTS can be directory names or environment variable references (e.g., '$work').
+Multiple roots can be specified in a single quoted string.
+
+Usage examples:
+$ git-replicate '$work'
+$ git-replicate '$work $sites'
+```
+
+`ROOTS` can be directory names or environment variable references (e.g., `'$work'`).
 Multiple roots can be specified in a single quoted string.
 
 ```shell
@@ -279,13 +375,43 @@ $ git-replicate '$work' > work.sh                # Replicate repos under $work
 $ git-replicate '$work $sites' > replicate.sh    # Replicate repos under $work and $sites
 ```
 
-When `git-replicate` completes,
-edit the generated script to suit, then
+When `git-replicate` completes, edit the generated script to suit, then
 copy it to the target machine and run it.
 
 ### `git-update`
 
 The `git-update` command updates each repository in the tree by running `git pull`.
+
+This is the help message produced by `git-update -h`:
+
+```text
+git-update - Recursively updates trees of git repositories.
+
+If no arguments are given, uses default roots (sites, sitesUbuntu, work) as roots.
+These environment variables point to roots of git repository trees to walk.
+Skips directories containing a .ignore file, and all subdirectories.
+
+Environment variables that point to the roots of git repository trees must have been exported, for example:
+
+  $ export work=$HOME/work
+
+Usage: git-update [OPTIONS] [ROOTS...]
+
+OPTIONS:
+  -h, --help           Show this help message and exit.
+  -q, --quiet          Suppress normal output, only show errors.
+  -s, --serial         Run tasks serially in a single thread.
+  -v, --verbose        Increase verbosity. Can be used multiple times (e.g., -v, -vv).
+
+ROOTS:
+When specifying roots, directory paths can be specified, and environment variables can be used, preceded by a dollar sign.
+
+Usage examples:
+
+$ git-update               # Use default environment variables as roots
+$ git-update $work $sites  # Use specific environment variables
+$ git-update $work /path/to/git/tree
+```
 
 
 ## Development
