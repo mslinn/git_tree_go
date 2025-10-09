@@ -46,8 +46,7 @@ func main() {
   displayPath := strings.Replace(configPath, home, "$HOME", 1)
 
   fmt.Printf(heredoc.Doc(`
-		Welcome to git-tree configuration.
-		This utility creates a configuration file at %s.
+		This command creates a configuration file for the other git-tree commands in %s.
 
 		In the following dialog, press Enter to accept default values presented within brackets.
   `), displayPath)
