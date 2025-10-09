@@ -351,20 +351,21 @@ Build complete!
 ### Running
 
 Commands such as `git-exec` can be run several ways.
-The most direct is to use `go run`:
+The most direct is to use `go run` and point to the source of the file to compile and run.
+Unlike `go build`, `go run` does not leave a permanent executable file in your project directory.
 
 ```shell
 $ go run ./cmd/git-exec $work pwd
 ```
 
-Alternatively, build everything first:
+Alternatively, build everything to `bin/` first:
 
 ```shell
 $ make build
 $ ./bin/git-exec $work pwd
 ```
 
-Alternatively, build just the command first:
+Alternatively, build just the command to `bin/` first:
 
 ```shell
 $ make git-exec
