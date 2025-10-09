@@ -1,15 +1,11 @@
 1) Examine the RSpec unit tests in /mnt/f/work/git/git_tree/spec then
-   generate similar tests for this project. Also generate standard tests.
+   generate similar tests for the five commands (in the /cmd directory) in this project.
 
-2) The `Makefile` target `vet` should verify that Go 1.24 or later is available.
-
-3) The [filepath-securejoin](https://github.com/cyphar/filepath-securejoin) docs say:
+2) The [filepath-securejoin](https://github.com/cyphar/filepath-securejoin) docs say:
 
     SecureJoin (and SecureJoinVFS) are still provided by this library to support legacy users,
     but new users are strongly suggested to avoid using SecureJoin and instead use the new api
     or switch to `libpathrs`.
-
-4) git-treeconfig does not display help when the `-h` flag is provided.
 
 5) The git-treeconfig help output should substitute '$HOME' for `/home/user/`.
   For example, the following displays the current dialog:
