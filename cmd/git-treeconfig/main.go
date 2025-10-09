@@ -14,14 +14,14 @@ import (
 
 func showHelp() {
   fmt.Println(heredoc.Doc(`
-      git-treeconfig - Configure git-tree settings
-      This utility creates a configuration file at $HOME/.treeconfig.yml
-      Press Enter to accept the default value in brackets.
+		git-treeconfig - Configure git-tree settings
+		This utility creates a configuration file at $HOME/.treeconfig.yml
+		Press Enter to accept the default value in brackets.
 
-      Usage: git-treeconfig [OPTIONS]
+		Usage: git-treeconfig [OPTIONS]
 
-      OPTIONS:
-        -h   Show this help message
+		OPTIONS:
+			-h   Show this help message
   `))
   os.Exit(0)
 }

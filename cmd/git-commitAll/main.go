@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/MakeNowJust/heredoc"
 	"os"
 	"os/exec"
 	"strings"
@@ -41,30 +42,30 @@ func main() {
 
 func showHelp() {
 	config := internal.NewConfig()
-	fmt.Printf(`git-commitAll - Recursively commits and pushes changes in all git repositories under the specified roots.
-If no directories are given, uses default roots (%s) as roots.
-Skips directories containing a .ignore file, and all subdirectories.
-Repositories in a detached HEAD state are skipped.
+	fmt.Printf(heredoc.Doc(`git-commitAll - Recursively commits and pushes changes in all git repositories under the specified roots.
+		If no directories are given, uses default roots (%s) as roots.
+		Skips directories containing a .ignore file, and all subdirectories.
+		Repositories in a detached HEAD state are skipped.
 
-Options:
-  -h, --help                Show this help message and exit.
-  -m, --message MESSAGE     Use the given string as the commit message.
-                            (default: "-")
-  -q, --quiet               Suppress normal output, only show errors.
-  -s, --serial              Run tasks serially in a single thread in the order specified.
-  -v, --verbose             Increase verbosity. Can be used multiple times (e.g., -v, -vv).
+		Options:
+			-h, --help                Show this help message and exit.
+			-m, --message MESSAGE     Use the given string as the commit message.
+																(default: "-")
+			-q, --quiet               Suppress normal output, only show errors.
+			-s, --serial              Run tasks serially in a single thread in the order specified.
+			-v, --verbose             Increase verbosity. Can be used multiple times (e.g., -v, -vv).
 
-Usage:
-  git-commitAll [OPTIONS] [ROOTS...]
+		Usage:
+			git-commitAll [OPTIONS] [ROOTS...]
 
-ROOTS can be directory names or environment variable references (e.g., '$work').
-Multiple roots can be specified in a single quoted string.
+		ROOTS can be directory names or environment variable references (e.g., '$work').
+		Multiple roots can be specified in a single quoted string.
 
-Usage examples:
-  git-commitAll                                # Commit with default message "-"
-  git-commitAll -m "This is a commit message"  # Commit with a custom message
-  git-commitAll $work $sites                   # Commit in repositories under specific roots
-`, strings.Join(config.DefaultRoots, ", "))
+		Usage examples:
+			git-commitAll                                # Commit with default message "-"
+			git-commitAll -m "This is a commit message"  # Commit with a custom message
+			git-commitAll $work $sites                   # Commit in repositories under specific roots
+		`), strings.Join(config.DefaultRoots, ", "))
 }
 
 func processRepo(walker *internal.GitTreeWalker, dir string, threadID int, config *internal.Config) {
