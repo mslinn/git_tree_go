@@ -18,14 +18,12 @@ func main() {
   // Parse common flags
   remainingArgs := cmd.ParseCommonFlags(showHelp)
 
-  // Create walker
   walker, err := internal.NewGitTreeWalker(remainingArgs, cmd.Serial)
   if err != nil {
     internal.Log(internal.LogQuiet, fmt.Sprintf("Error: %v", err), internal.ColorRed)
     os.Exit(1)
   }
 
-  // Process repositories
   walker.Process(func(dir string, threadID int, w *internal.GitTreeWalker) {
     processRepo(w, dir, threadID, cmd.Config)
   })
@@ -74,7 +72,6 @@ func processRepo(walker *internal.GitTreeWalker, dir string, threadID int, confi
   ctx, cancel := context.WithTimeout(context.Background(), time.Duration(config.GitTimeout)*time.Second)
   defer cancel()
 
-  // Execute git pull
   gitCmd := exec.CommandContext(ctx, "git", "pull")
   gitCmd.Dir = dir
 

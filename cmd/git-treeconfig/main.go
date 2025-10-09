@@ -31,9 +31,7 @@ func main() {
   helpFlag := flag.Bool("h", false, "Show help message")
   flag.Parse()
 
-  if *helpFlag {
-    showHelp()
-  }
+  if *helpFlag { showHelp() }
 
   config := internal.NewConfig()
   scanner := bufio.NewScanner(os.Stdin)
@@ -47,10 +45,12 @@ func main() {
   configPath := fmt.Sprintf("%s/.treeconfig.yml", home)
   displayPath := strings.Replace(configPath, home, "$HOME", 1)
 
-  fmt.Println("Welcome to git-tree configuration.")
-  fmt.Printf("This utility will help you create a configuration file at: %s\n", displayPath)
-  fmt.Println("Press Enter to accept the default value in brackets.")
-  fmt.Println()
+  fmt.Printf(heredoc.Doc(`
+		Welcome to git-tree configuration.
+		This utility creates a configuration file at %s.
+
+		In the following dialog, press Enter to accept default values presented within brackets.
+  `), displayPath)
 
   // Git timeout
   fmt.Printf("Git command timeout in seconds? |%d| ", config.GitTimeout)
