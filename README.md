@@ -288,37 +288,6 @@ make vet     # Analyze the code for potential issues.
 ```
 
 
-### Build and Run
-
-Build just one command:
-
-```shell
-make git-commitAll
-
-make git-exec
-make git-replicate
-make git-treeconfig
-make git-update
-```
-
-Example:
-
-```shell
-$ make
-Formatting code...
-internal/gem_support.go
-internal/task.go
-Vetting code...
-Building all commands...
-  Building git-commitAll...
-  Building git-evars...
-  Building git-exec...
-  Building git-replicate...
-  Building git-treeconfig...
-  Building git-update...
-Build complete!
-```
-
 ### Project Structure
 
 ```text
@@ -346,27 +315,58 @@ git_tree_go/
 ```
 
 
+### Building
+
+Build just one command:
+
+```shell
+make git-commitAll
+make git-evars
+make git-exec
+make git-replicate
+make git-treeconfig
+make git-update
+```
+
+Example:
+
+```shell
+$ make
+Formatting code...
+internal/gem_support.go
+internal/task.go
+Vetting code...
+Building all commands...
+  Building git-commitAll...
+  Building git-evars...
+  Building git-exec...
+  Building git-replicate...
+  Building git-treeconfig...
+  Building git-update...
+Build complete!
+```
+
 ### Running
 
 Commands such as `git-exec` can be run several ways.
 The most direct is to use `go run`:
 
 ```shell
-$ go run ./cmd/git-exec
+$ go run ./cmd/git-exec $work pwd
 ```
 
 Alternatively, build everything first:
 
 ```shell
 $ make build
-$ ./bin/git-exec
+$ ./bin/git-exec $work pwd
 ```
 
 Alternatively, build just the command first:
 
 ```shell
 $ make git-exec
-$ ./bin/git-exec
+$ ./bin/git-exec $work pwd
 ```
 
 
