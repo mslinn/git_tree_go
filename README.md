@@ -1,15 +1,16 @@
 # `git-tree-go`
 
-This Go package installs commands that walk one or more git directory trees and
-acts on each repository.
+This Go package installs commands that walk through one or more git
+directory trees (breadth-first) and act on each repository.
 Directories containing a file called `.ignore` are ignored, as well as all subdirectories.
-Multiple goroutines are used to dramatically boost performance.
+Multiple goroutines are normally used to dramatically boost performance,
+but serial processing is available for deterministic results.
 
 
 ## Commands
 
 - The `git-commitAll` command commits and pushes all changes to each repository
-  in the tree. Repositories in a detached `HEAD` state are skipped.
+  in the tree. Repositories that are in a detached `HEAD` state are skipped.
 
 - The `git-evars` command writes a script that defines environment variables
   pointing to each git repository.
@@ -32,6 +33,8 @@ Multiple goroutines are used to dramatically boost performance.
 
 ### Prerequisites
 
+[Install the Go language](https://go.dev/doc/install) if you need to.
+
 You need Go 1.24 or later installed on your system.
 
 ```shell
@@ -39,7 +42,14 @@ $ go version
 go version go1.24.2 linux/amd64
 ```
 
-[Install the Go language](https://go.dev/doc/install) if you need to.
+### Simple Build and Install
+
+To build and install a command-line program directly from a GitHub repository
+without manually cloning, use `go install`:
+
+```shell
+$ go install github.com/mslinn/git_tree_go/cmd@latest
+```
 
 
 ### Pre-built Binaries
