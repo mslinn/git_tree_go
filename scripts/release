@@ -178,7 +178,7 @@ done
   local next_version
   next_version=$(get_next_version)
   if [[ -z "$version" ]]; then
-    read -rp "What version number should this release have [$next_version]: " version
+    read -rp "What version number should this release have (accept the default with Enter) [$next_version] " version
     version=${version:-$next_version}
   fi
 
