@@ -374,6 +374,35 @@ $ git-exec '$my_plugins' 'if [ -d demo ]; then realpath demo; fi'
 ```
 
 
+### `git-list-executables`
+
+This is the help message produced by `git-list-executables -h`:
+
+```text
+git-list-executables - Lists executables installed by git-tree-go.
+
+Usage: git-list-executables [OPTIONS]
+
+OPTIONS:
+  -h, --help           Show this help message and exit.
+```
+
+Example:
+
+```shell
+$ git-list-executables
+Executables installed by git-tree-go in: /mnt/f/work/git/git_tree_go/bin
+
+git-commitAll: Commit all changes in the current repository.
+git-evars: Lists all environment variables used by git.
+git-exec: Execute a command in each repository of the tree.
+git-list-executables: Lists executables installed by git-tree-go.
+git-replicate: Replicate a git repository.
+git-treeconfig: Manage the git-tree configuration.
+git-update: Update all repositories in the tree.
+```
+
+
 ### `git-replicate`
 
 This is the help message produced by `git-replicate -h`:
@@ -401,34 +430,6 @@ $ git-replicate '$work $sites'
 
 When `git-replicate` completes, edit the generated script to suit, then
 copy it to the target machine and run it.
-```
-
-### `git-list-executables`
-
-This is the help message produced by `git-list-executables -h`:
-
-```text
-git-list-executables - Lists executables installed by git-tree-go.
-
-Usage: git-list-executables [OPTIONS]
-
-OPTIONS:
-  -h, --help           Show this help message and exit.
-```
-
-Example:
-
-```shell
-$ git-list-executables
-Executables installed by git-tree-go in: /mnt/f/work/git/git_tree_go/bin
-
-git-commitAll: Commit all changes in the current repository.
-git-evars: Lists all environment variables used by git.
-git-exec: Execute a command in each repository of the tree.
-git-list-executables: Lists executables installed by git-tree-go.
-git-replicate: Replicate a git repository.
-git-treeconfig: Manage the git-tree configuration.
-git-update: Update all repositories in the tree.
 ```
 
 
