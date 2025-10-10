@@ -144,9 +144,9 @@ main() {
   # Confirm release
   echo ""
   warning "Ready to release v$version"
-  read -p "Proceed with release? (Y/n) " -y 1 -r
+  read -p "Proceed with release? (Y/n) " -n 1 -r
   echo
-  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+  if [[ $REPLY =~ ^[Nn]$ ]]; then
     error "Release cancelled"
   fi
 
