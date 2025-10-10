@@ -28,6 +28,7 @@ git_tree_go/
 │   ├── git-commitAll/
 │   ├── git-evars/
 │   ├── git-exec/
+│   ├── git-list-executables/
 │   ├── git-replicate/
 │   ├── git-treeconfig/
 │   └── git-update/
@@ -55,6 +56,7 @@ Build just one command:
 make git-commitAll
 make git-evars
 make git-exec
+make git-list-executables
 make git-replicate
 make git-treeconfig
 make git-update

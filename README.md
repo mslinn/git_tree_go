@@ -1,4 +1,4 @@
-# `git-tree-go`
+# `git-tree-go` ![Latest Release](https://img.shields.io/github/v/release/mslinn/git_tree_go)
 
 This Go package installs commands that walk through one or more git
 directory trees (breadth-first) and act on each repository.
@@ -16,6 +16,8 @@ but serial processing is available for deterministic results.
   pointing to each git repository.
 
 - The `git-exec` command executes an arbitrary shell command for each repository.
+
+- The `git-list-executables` command lists all the executables created by this package.
 
 - The `git-replicate` command writes a script that clones the repositories in the tree,
   and adds any defined remotes.
@@ -412,6 +414,34 @@ $ git-replicate '$work $sites'
 
 When `git-replicate` completes, edit the generated script to suit, then
 copy it to the target machine and run it.
+```
+
+### `git-list-executables`
+
+This is the help message produced by `git-list-executables -h`:
+
+```text
+git-list-executables - Lists executables installed by git-tree-go.
+
+Usage: git-list-executables [OPTIONS]
+
+OPTIONS:
+  -h, --help           Show this help message and exit.
+```
+
+Example:
+
+```shell
+$ git-list-executables
+Executables installed by git-tree-go in: /mnt/f/work/git/git_tree_go/bin
+
+git-commitAll: Commit all changes in the current repository.
+git-evars: Lists all environment variables used by git.
+git-exec: Execute a command in each repository of the tree.
+git-list-executables: Lists executables installed by git-tree-go.
+git-replicate: Replicate a git repository.
+git-treeconfig: Manage the git-tree configuration.
+git-update: Update all repositories in the tree.
 ```
 
 

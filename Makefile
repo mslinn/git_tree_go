@@ -4,7 +4,7 @@
 BIN_DIR := bin
 
 # Command directories
-COMMANDS := git-commitAll git-evars git-exec git-replicate git-treeconfig git-update
+COMMANDS := git-commitAll git-evars git-exec git-list-executables git-replicate git-treeconfig git-update
 
 # Go parameters
 GOCMD := go
@@ -71,6 +71,9 @@ git-evars: $(BIN_DIR)
 
 git-exec: $(BIN_DIR)
 	@$(GOBUILD) $(LDFLAGS) -o $(BIN_DIR)/git-exec ./cmd/git-exec
+
+git-list-executables: $(BIN_DIR)
+	@$(GOBUILD) $(LDFLAGS) -o $(BIN_DIR)/git-list-executables ./cmd/git-list-executables
 
 git-replicate: $(BIN_DIR)
 	@$(GOBUILD) $(LDFLAGS) -o $(BIN_DIR)/git-replicate ./cmd/git-replicate
