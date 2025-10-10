@@ -42,50 +42,47 @@ $ go version
 go version go1.24.2 linux/amd64
 ```
 
-### Simple Build and Install
+### Install Release
 
-To build and install the command-line programs directly from the GitHub repository
+To install the command-line programs from releases on the GitHub repository
 without manually cloning, use `go install`.
 
-The following provides the version at `HEAD`, which might be unstable:
+The following provides the most recent released version:
 
 ```shell
 $ go install github.com/mslinn/git_tree_go/cmd/...@latest
+go: downloading github.com/mslinn/git_tree_go v0.1.9
+go: downloading github.com/MakeNowJust/heredoc v1.0.0
+go: downloading github.com/ProtonMail/go-crypto v1.3.0
+go: downloading dario.cat/mergo v1.0.2
+go: downloading github.com/sergi/go-diff v1.4.0
+go: downloading github.com/pjbgf/sha1cd v0.5.0
+go: downloading golang.org/x/sys v0.37.0
+go: downloading github.com/kevinburke/ssh_config v1.4.0
+go: downloading github.com/skeema/knownhosts v1.3.2
+go: downloading golang.org/x/crypto v0.43.0
+go: downloading golang.org/x/net v0.46.0
+go: downloading github.com/cyphar/filepath-securejoin v0.5.0
+go: downloading github.com/klauspost/cpuid/v2 v2.3.0
 ```
 
-The following provides version 0.1.8:
+The following provides version 0.1.9:
 
 ```shell
-$ go install github.com/mslinn/git_tree_go/cmd/...@v0.1.8
-```
-
-
-### Pre-built Binaries
-
-Pre-built binaries for Linux, macOS, and Windows are available on the [Releases page](https://github.com/mslinn/git_tree_go/releases).
-
-Download the appropriate archive for your platform and place the executables somewhere on the `PATH`:
-
-```shell
-# Example for Linux amd64
-$ VER=1.0.0
-$ wget https://github.com/mslinn/git_tree_go/releases/download/v${VER}/git_tree_go_${VER}_Linux_x86_64.tar.gz
-$ tar -xzf git_tree_go_${VER}_Linux_x86_64.tar.gz
-$ sudo mv git-* /usr/local/bin/
+$ go install github.com/mslinn/git_tree_go/cmd/...@v0.1.9
+go: downloading github.com/mslinn/git_tree_go v0.1.9
 ```
 
 
 ### Building from Source
 
-Download, build and install to `$GOPATH/bin` like this:
+Download, build and install to `$HOME/go/bin/` like this:
 
 ```shell
 $ git clone https://github.com/mslinn/git_tree_go.git
 $ cd git_tree_go
 $ make install
 ```
-
-The `Makefile` causes executables to be created in `$HOME/go/bin/`.
 
 
 ## Configuration

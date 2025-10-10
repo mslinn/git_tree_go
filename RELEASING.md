@@ -74,6 +74,7 @@ Examples:
 - `v1.1.1` - Bug fix
 - `v2.0.0` - Breaking changes
 
+
 ## Changelog
 
 Before creating a release, update the CHANGELOG.md file with:
@@ -82,6 +83,7 @@ Before creating a release, update the CHANGELOG.md file with:
 - Bug fixes
 - Breaking changes
 - Deprecations
+
 
 ## Rollback
 
