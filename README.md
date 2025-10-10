@@ -1,4 +1,5 @@
-# `git-tree-go` ![Latest Release](https://img.shields.io/github/v/release/mslinn/git_tree_go)
+# `git-tree-go` [![GitHub newest release](https://img.shields.io/github/v/release/mslinn/git_tree_go)](https://github.com/mslinn/git_tree_go/releases/latest)
+
 
 This Go package installs commands that walk through one or more git
 directory trees (breadth-first) and act on each repository.
