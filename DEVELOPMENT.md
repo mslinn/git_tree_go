@@ -183,7 +183,7 @@ This project uses GoReleaser and GitHub Actions for automated releases. To creat
 The easiest way to create a release:
 
 ```shell
-$ ./scripts/release.sh 1.2.3
+$ ./scripts/release 1.2.3
 ```
 
 This script will:

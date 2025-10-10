@@ -1,6 +1,6 @@
 #!/bin/bash
 # Release script for git-tree-go
-# Usage: ./scripts/release.sh [version]
+# Usage: ./scripts/release.sh [-s] [-d] [version]
 # Example: ./scripts/release.sh 1.2.3
 
 set -e
@@ -10,6 +10,19 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+
+# --- Options ---
+SKIP_TESTS=false
+DEBUG_MODE=false
+
+usage() {
+  echo "Usage: $0 [-h] [-s] [-d] [version]"
+  echo "  -h: Display this help message"
+  echo "  -s: Skip running integration tests"
+  echo "  -d: Run GoReleaser in debug mode (in the CI workflow)"
+  echo "  version: The version to release (e.g., 1.2.3)"
+  exit 0
+}
 
 # Function to print colored messages
 info() {
@@ -69,6 +82,10 @@ check_tag() {
 
 # Run tests
 run_tests() {
+  if [ "$SKIP_TESTS" = true ]; then
+    warning "Skipping integration tests."
+    return
+  fi
   info "Running tests..."
   if make test:spec -short 2>/dev/null; then
     success "All tests passed"
@@ -80,7 +97,7 @@ run_tests() {
 # Update version in files (if needed)
 update_version_files() {
   local version=$1
-  # Add version updates here if you store version in any files
+  # Add version updates here if version is stored in any files
   # For now, this is a placeholder
   info "Version will be v$version"
 }
@@ -89,9 +106,15 @@ update_version_files() {
 create_tag() {
   local version=$1
   local tag="v$version"
+  local tag_message="Release $tag"
+
+  if [ "$DEBUG_MODE" = true ]; then
+    tag_message+=$'\n\n[debug]'
+    warning "GoReleaser will run in debug mode in the CI workflow."
+  fi
 
   info "Creating tag $tag..."
-  git tag -a "$tag" -m "Release $tag"
+  git tag -a "$tag" -m "$tag_message"
   success "Tag $tag created"
 
   info "Pushing tag to origin..."
@@ -111,6 +134,17 @@ show_current_version() {
 
 # Main script
 main() {
+  # Parse options
+  while getopts "hsd" opt; do
+    case ${opt} in
+      h ) usage ;; 
+      s ) SKIP_TESTS=true ;; 
+      d ) DEBUG_MODE=true ;; 
+      \? ) usage ;; 
+    esac
+done
+  shift $((OPTIND -1))
+
   echo "=================================="
   echo "  git-tree-go Release Script"
   echo "=================================="
@@ -120,23 +154,23 @@ main() {
   show_current_version
   echo ""
 
+  # Get version from argument or prompt
+  local version=$1
+  if [[ -z "$version" ]]; then
+    read -rp "Enter version number (X.Y.Z): " version
+  fi
+
+  # Validate version
+  validate_version "$version"
+  success "Version format is valid: $version"
+
   # Run checks
   check_branch
   check_clean
   check_tag "$version"
 
   # Run tests
-  run_tests # Commented out for v0.1.0
-
-  # Get version from argument or prompt
-  local version=$1
-  if [[ -z "$version" ]]; then
-    read -p "Enter version number (X.Y.Z): " version
-  fi
-
-  # Validate version
-  validate_version "$version"
-  success "Version format is valid: $version"
+  run_tests
 
   # Update version files
   update_version_files "$version"
