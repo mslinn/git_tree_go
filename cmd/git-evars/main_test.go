@@ -7,7 +7,7 @@ import (
   "strings"
   "testing"
 
-  "git-tree-go/internal"
+  "github.com/mslinn/git_tree_go/internal"
 )
 
 // TestEnvVarName tests the envVarName function

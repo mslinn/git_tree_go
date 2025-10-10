@@ -7,7 +7,7 @@ import (
   "testing"
   "time"
 
-  "git-tree-go/internal"
+  "github.com/mslinn/git_tree_go/internal"
 )
 
 // TestProcessRepo_Success tests successful git pull execution

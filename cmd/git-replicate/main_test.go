@@ -6,7 +6,7 @@ import (
   "strings"
   "testing"
 
-  "git-tree-go/internal"
+  "github.com/mslinn/git_tree_go/internal"
   "github.com/go-git/go-git/v5"
   "github.com/go-git/go-git/v5/config"
 )

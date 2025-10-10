@@ -9,7 +9,7 @@ import (
   "strings"
   "time"
 
-  "git-tree-go/internal"
+  "github.com/mslinn/git_tree_go/internal"
 )
 
 func main() {
