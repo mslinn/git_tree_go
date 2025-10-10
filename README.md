@@ -54,26 +54,12 @@ The following provides the most recently released version:
 
 ```shell
 $ go install github.com/mslinn/git_tree_go/cmd/...@latest
-go: downloading github.com/mslinn/git_tree_go v0.1.9
-go: downloading github.com/MakeNowJust/heredoc v1.0.0
-go: downloading github.com/ProtonMail/go-crypto v1.3.0
-go: downloading dario.cat/mergo v1.0.2
-go: downloading github.com/sergi/go-diff v1.4.0
-go: downloading github.com/pjbgf/sha1cd v0.5.0
-go: downloading golang.org/x/sys v0.37.0
-go: downloading github.com/kevinburke/ssh_config v1.4.0
-go: downloading github.com/skeema/knownhosts v1.3.2
-go: downloading golang.org/x/crypto v0.43.0
-go: downloading golang.org/x/net v0.46.0
-go: downloading github.com/cyphar/filepath-securejoin v0.5.0
-go: downloading github.com/klauspost/cpuid/v2 v2.3.0
 ```
 
 The following provides version 0.1.9:
 
 ```shell
 $ go install github.com/mslinn/git_tree_go/cmd/...@v0.1.9
-go: downloading github.com/mslinn/git_tree_go v0.1.9
 ```
 
 
