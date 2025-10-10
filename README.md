@@ -44,11 +44,19 @@ go version go1.24.2 linux/amd64
 
 ### Simple Build and Install
 
-To build and install a command-line program directly from a GitHub repository
-without manually cloning, use `go install`:
+To build and install the command-line programs directly from the GitHub repository
+without manually cloning, use `go install`.
+
+The following provides the version at `HEAD`, which might be unstable:
 
 ```shell
-$ go install github.com/mslinn/git_tree_go/cmd@latest
+$ go install github.com/mslinn/git_tree_go/cmd/...@latest
+```
+
+The following provides version 0.1.8:
+
+```shell
+$ go install github.com/mslinn/git_tree_go/cmd/...@v0.1.8
 ```
 
 

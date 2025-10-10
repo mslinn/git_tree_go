@@ -1,4 +1,4 @@
-module git-tree-go
+module github.com/mslinn/git_tree_go
 
 go 1.24.2
 
