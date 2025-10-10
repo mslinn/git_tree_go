@@ -16,11 +16,13 @@ SKIP_TESTS=false
 DEBUG_MODE=false
 
 usage() {
-  echo "Usage: $0 [-h] [-s] [-d] [version]"
+  echo "Release a new version to GitHub"
+  echo ""
+  echo "Usage: $(basename $0) [-h] [-s] [-d] [VERSION]"
+  echo "  -d: Run GoReleaser in debug mode in the CI workflow"
   echo "  -h: Display this help message"
   echo "  -s: Skip running integration tests"
-  echo "  -d: Run GoReleaser in debug mode (in the CI workflow)"
-  echo "  version: The version to release (e.g., 1.2.3)"
+  echo "  VERSION: The version to release (e.g., 1.2.3)"
   exit 0
 }
 
@@ -137,10 +139,10 @@ main() {
   # Parse options
   while getopts "hsd" opt; do
     case ${opt} in
-      h ) usage ;; 
-      s ) SKIP_TESTS=true ;; 
-      d ) DEBUG_MODE=true ;; 
-      \? ) usage ;; 
+      h ) usage ;;
+      s ) SKIP_TESTS=true ;;
+      d ) DEBUG_MODE=true ;;
+      \? ) usage ;;
     esac
 done
   shift $((OPTIND -1))
