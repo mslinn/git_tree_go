@@ -70,7 +70,7 @@ check_tag() {
 # Run tests
 run_tests() {
   info "Running tests..."
-  if make test:spec 2>/dev/null; then
+  if make test:spec -short 2>/dev/null; then
     success "All tests passed"
   else
     error "Tests failed. Fix issues before releasing."

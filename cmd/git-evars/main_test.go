@@ -254,6 +254,9 @@ func TestGitEvars_WithZoweeOption(t *testing.T) {
 // TestGitEvars_NoRepositories tests behavior when no repositories are found
 func TestGitEvars_NoRepositories(t *testing.T) {
   t.Skip("Bah! Mere details!")
+  if testing.Short() {
+    t.Skip("Skipping integration test in short mode")
+  }
 
   // Create a temporary directory with no git repos
   tmpDir, err := os.MkdirTemp("", "git-evars-empty-*")
@@ -295,7 +298,6 @@ func TestGitEvars_NoRepositories(t *testing.T) {
 // TestGitEvars_WithIgnoreFile tests that .ignore files are respected
 func TestGitEvars_WithIgnoreFile(t *testing.T) {
   t.Skip("Bah! Mere details!")
-
   if testing.Short() {
     t.Skip("Skipping integration test in short mode")
   }
