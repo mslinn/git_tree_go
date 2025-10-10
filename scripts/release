@@ -199,7 +199,7 @@ done
 
   # Confirm release
   echo ""
-  read -p "${YELLOW}⚠${NC} Proceed with release v$version? (Y/n) " -n 1 -r
+  read -p "Proceed with release v$version? (Y/n) " -n 1 -r
   echo
   if [[ $REPLY =~ ^[Nn]$ ]]; then
     error "Release cancelled"
