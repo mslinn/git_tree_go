@@ -1,7 +1,7 @@
 #!/bin/bash
 # Release script for git-tree-go
-# Usage: ./scripts/release.sh [-s] [-d] [version]
-# Example: ./scripts/release.sh 1.2.3
+# Usage: ./scripts/release [-s] [-d] [version]
+# Example: ./scripts/release 1.2.3
 
 set -e
 
@@ -15,14 +15,29 @@ NC='\033[0m' # No Color
 SKIP_TESTS=false
 DEBUG_MODE=false
 
+get_next_version() {
+  local latest_tag
+  latest_tag=$(git describe --tags --abbrev=0 2>/dev/null)
+  if [[ -z "$latest_tag" ]]; then
+    echo "0.1.0"
+    return
+  fi
+  local version_number=${latest_tag#v} # remove v prefix
+  local next_version
+  next_version=$(echo "$version_number" | awk -F. -v OFS=. '{$3++; print}')
+  echo "$next_version"
+}
+
 usage() {
+  local next_version
+  next_version=$(get_next_version)
   echo "Release a new version to GitHub"
   echo ""
   echo "Usage: $(basename $0) [-h] [-s] [-d] [VERSION]"
   echo "  -d: Run GoReleaser in debug mode in the CI workflow"
   echo "  -h: Display this help message"
   echo "  -s: Skip running integration tests"
-  echo "  VERSION: The version to release (e.g., 1.2.3)"
+  echo "  VERSION: The version to release (e.g., $next_version)"
   exit 0
 }
 
@@ -54,7 +69,8 @@ validate_version() {
 
 # Check if on main branch
 check_branch() {
-  local current_branch=$(git rev-parse --abbrev-ref HEAD)
+  local current_branch
+  current_branch=$(git rev-parse --abbrev-ref HEAD)
   if [[ "$current_branch" != "main" && "$current_branch" != "master" ]]; then
     warning "You are on branch '$current_branch', not main/master"
     read -p "Continue anyway? (y/N) " -n 1 -r
@@ -130,7 +146,8 @@ create_tag() {
 
 # Show current version
 show_current_version() {
-  local latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
+  local latest_tag
+  latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
   info "Latest tag: $latest_tag"
 }
 
@@ -158,8 +175,11 @@ done
 
   # Get version from argument or prompt
   local version=$1
+  local next_version
+  next_version=$(get_next_version)
   if [[ -z "$version" ]]; then
-    read -rp "Enter version number (X.Y.Z): " version
+    read -rp "Enter version number (X.Y.Z) [default: $next_version]: " version
+    version=${version:-$next_version}
   fi
 
   # Validate version
