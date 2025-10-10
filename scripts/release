@@ -43,19 +43,19 @@ usage() {
 
 # Function to print colored messages
 info() {
-  echo -e "${BLUE}ℹ${NC} $1"
+  echo -e "${BLUE}ℹ${NC}  $1"
 }
 
 success() {
-  echo -e "${GREEN}✓${NC} $1"
+  echo -e "${GREEN}✓${NC}  $1"
 }
 
 warning() {
-  echo -e "${YELLOW}⚠${NC} $1"
+  echo -e "${YELLOW}⚠${NC}  $1"
 }
 
 error() {
-  echo -e "${RED}✗${NC} $1"
+  echo -e "${RED}✗${NC}  $1"
   exit 1
 }
 
@@ -148,7 +148,7 @@ create_tag() {
 show_current_version() {
   local latest_tag
   latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
-  info "Latest tag: $latest_tag"
+  info "The most recent version tag is $latest_tag"
 }
 
 # Main script
@@ -178,7 +178,7 @@ done
   local next_version
   next_version=$(get_next_version)
   if [[ -z "$version" ]]; then
-    read -rp "Enter version number (X.Y.Z) [default: $next_version]: " version
+    read -rp "Enter version number [default: $next_version]: " version
     version=${version:-$next_version}
   fi
 
