@@ -227,6 +227,113 @@ func TestGitTreeWalker_AbbreviatePath_NoMatch(t *testing.T) {
 	}
 }
 
+// TestGitTreeWalker_AbbreviatePath_EnvironmentVariable tests abbreviation using environment variable from roots
+func TestGitTreeWalker_AbbreviatePath_EnvironmentVariable(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "git-tree-test")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Set an environment variable and use it as a root
+	os.Setenv("TEST_OTHER_VAR", tmpDir)
+	defer os.Unsetenv("TEST_OTHER_VAR")
+
+	// Create a walker with this environment variable as a root
+	walker, err := NewGitTreeWalker([]string{"$TEST_OTHER_VAR"}, false)
+	if err != nil {
+		t.Fatalf("Failed to create walker: %v", err)
+	}
+
+	// Create a subdirectory path under TEST_OTHER_VAR
+	subDir := filepath.Join(tmpDir, "subdir", "project")
+
+	// Abbreviate the path
+	abbreviated := walker.AbbreviatePath(subDir)
+
+	// Should replace the tmpDir with $TEST_OTHER_VAR (since it's a root)
+	expected := filepath.Join("$TEST_OTHER_VAR", "subdir", "project")
+	if abbreviated != expected {
+		t.Errorf("Expected abbreviated path to be '%s', got '%s'", expected, abbreviated)
+	}
+}
+
+// TestGitTreeWalker_AbbreviatePath_NonRootEnvVar tests that non-root env vars are NOT used
+func TestGitTreeWalker_AbbreviatePath_NonRootEnvVar(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "git-tree-test")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Set an environment variable that is NOT used as a root
+	os.Setenv("TEST_UNUSED_VAR", tmpDir)
+	defer os.Unsetenv("TEST_UNUSED_VAR")
+
+	// Create a walker with a different root
+	otherRoot, err := os.MkdirTemp("", "git-tree-other")
+	if err != nil {
+		t.Fatalf("Failed to create other temp dir: %v", err)
+	}
+	defer os.RemoveAll(otherRoot)
+
+	walker, err := NewGitTreeWalker([]string{otherRoot}, false)
+	if err != nil {
+		t.Fatalf("Failed to create walker: %v", err)
+	}
+
+	// Create a subdirectory path under TEST_UNUSED_VAR
+	subDir := filepath.Join(tmpDir, "subdir", "project")
+
+	// Abbreviate the path
+	abbreviated := walker.AbbreviatePath(subDir)
+
+	// Should NOT replace with $TEST_UNUSED_VAR since it's not a root
+	// Path should remain unchanged
+	if abbreviated != subDir {
+		t.Errorf("Expected path to remain unchanged as '%s', got '%s'", subDir, abbreviated)
+	}
+}
+
+// TestGitTreeWalker_AbbreviatePath_LongestMatch tests that the longest matching root is used
+func TestGitTreeWalker_AbbreviatePath_LongestMatch(t *testing.T) {
+	// Create temp directories with nested structure
+	tmpDir1, err := os.MkdirTemp("", "git-tree-test1")
+	if err != nil {
+		t.Fatalf("Failed to create temp dir 1: %v", err)
+	}
+	defer os.RemoveAll(tmpDir1)
+
+	tmpDir2 := filepath.Join(tmpDir1, "nested")
+	os.MkdirAll(tmpDir2, 0755)
+
+	// Set environment variables for both paths and use them as roots
+	os.Setenv("TEST_VAR_SHORT", tmpDir1)
+	os.Setenv("TEST_VAR_LONG", tmpDir2)
+	defer func() {
+		os.Unsetenv("TEST_VAR_SHORT")
+		os.Unsetenv("TEST_VAR_LONG")
+	}()
+
+	// Create walker with both roots
+	walker, err := NewGitTreeWalker([]string{"$TEST_VAR_SHORT", "$TEST_VAR_LONG"}, false)
+	if err != nil {
+		t.Fatalf("Failed to create walker: %v", err)
+	}
+
+	// Create a path under the nested directory
+	subDir := filepath.Join(tmpDir2, "project")
+
+	// Abbreviate the path
+	abbreviated := walker.AbbreviatePath(subDir)
+
+	// Should use the longer match (TEST_VAR_LONG)
+	expected := filepath.Join("$TEST_VAR_LONG", "project")
+	if abbreviated != expected {
+		t.Errorf("Expected abbreviated path to be '%s', got '%s'", expected, abbreviated)
+	}
+}
+
 // TestGitTreeWalker_FindGitRepos tests finding git repositories
 func TestGitTreeWalker_FindGitRepos(t *testing.T) {
 	// Create a temporary directory structure

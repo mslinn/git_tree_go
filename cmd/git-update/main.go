@@ -63,6 +63,10 @@ func showHelp() {
     $ git-update               # Use default environment variables as roots
     $ git-update $work $sites  # Use specific environment variables
     $ git-update $work /path/to/git/tree
+
+    Note: When environment variables are used as roots (e.g., $work), output paths
+    will be condensed using the variable name. For example:
+      Updating $work/CanPolitique    (instead of /mnt/f/work/CanPolitique)
   `), strings.Join(config.DefaultRoots, ", "))
 }
 

@@ -37,14 +37,28 @@ func NewGitTreeWalker(args []string, serial bool) (*GitTreeWalker, error) {
 }
 
 // AbbreviatePath abbreviates a directory path by replacing expanded root prefixes with their original display representations.
+// If a root was specified as an environment variable (e.g., $work), this will condense any path under that root to use
+// the variable name (e.g., /mnt/f/work/foo -> $work/foo).
 func (w *GitTreeWalker) AbbreviatePath(dir string) string {
+	// Try to abbreviate using the root map
+	// This will match the longest root prefix and replace it with the display representation
+	longestMatch := ""
+	longestDisplayRoot := ""
+
 	for displayRoot, expandedPaths := range w.RootMap {
 		for _, expandedPath := range expandedPaths {
-			if strings.HasPrefix(dir, expandedPath) {
-				return strings.Replace(dir, expandedPath, displayRoot, 1)
+			// Check for prefix match with separator, or exact match
+			if (strings.HasPrefix(dir, expandedPath+string(filepath.Separator)) || dir == expandedPath) && len(expandedPath) > len(longestMatch) {
+				longestMatch = expandedPath
+				longestDisplayRoot = displayRoot
 			}
 		}
 	}
+
+	if longestMatch != "" {
+		return strings.Replace(dir, longestMatch, longestDisplayRoot, 1)
+	}
+
 	return dir
 }
 

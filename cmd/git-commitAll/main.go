@@ -68,6 +68,9 @@ func showHelp() {
       git-commitAll                                # Commit with default message "-"
       git-commitAll -m "This is a commit message"  # Commit with a custom message
       git-commitAll $work $sites                   # Commit in repositories under specific roots
+
+    Note: When environment variables are used as roots, output paths will be condensed.
+    For example: "Committed and pushed changes in $work/project"
     `), strings.Join(config.DefaultRoots, ", "))
 }
 

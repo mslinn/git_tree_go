@@ -473,6 +473,10 @@ $ git-update $work $sites  # Use specific environment variables
 $ git-update $work /path/to/git/tree
 ```
 
+**Note:** When environment variables are used as roots (e.g., `$work`), the output will display
+paths in condensed form using the variable name. For example, instead of showing
+`Updating /mnt/f/work/CanPolitique`, it will show `Updating $work/CanPolitique`.
+
 
 ## Development
 
