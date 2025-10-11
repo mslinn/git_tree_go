@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.1.14 / 2025-10-11
+
+- $ prefix added to list output
+
+
 ## 0.1.13 / 2025-10-10
 
 - Fixed path condensation in `git-exec` command. Output now properly abbreviates paths using environment variable names
