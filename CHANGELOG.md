@@ -1,10 +1,12 @@
 # Change Log
 
+
 ## 0.1.12 / 2025-10-10
 
 - Enabled all previously skipped tests in `cmd/git-evars/main_test.go` and `cmd/git-replicate/main_test.go`.
   Fixed [#1](https://github.com/mslinn/git_tree_go/issues/1) and [#2](https://github.com/mslinn/git_tree_go/issues/2).
 - Enhanced logger thread safety by preventing double-close of logger channel and adding `ResetLogger()` for test isolation.
+
 
 ## 0.1.11 / 2025-10-10
 
@@ -12,6 +14,7 @@
   paths are now displayed in condensed form using the variable name. For example,
   `/mnt/f/work/CanPolitique` is shown as `$work/CanPolitique`. This makes output more concise
   and readable. Fixed [#4](https://github.com/mslinn/git_tree_go/issues/4).
+
 
 ## 0.1.10 / 2025-10-10
 
