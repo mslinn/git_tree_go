@@ -1,23 +1,3 @@
-## [0.1.13] - 2025-10-11
-
-### Added
-- 
-
-### Changed
-- 
-
-### Deprecated
-- 
-
-### Removed
-- 
-
-### Fixed
-- 
-
-### Security
-- 
-
 # Change Log
 
 ## 0.1.13 / 2025-10-10
