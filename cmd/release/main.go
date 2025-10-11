@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
@@ -150,15 +151,34 @@ func main() {
 		fmt.Printf("Created tag %s\n", tag)
 	}
 
-	err = repo.Push(&git.PushOptions{
-		RemoteURL: "git@github.com:mslinn/git_tree_go.git",
-		Auth:      sshAuth,
-		RefSpecs:  []config.RefSpec{config.RefSpec("refs/tags/" + tag + ":refs/tags/" + tag)},
+	// Check if tag exists remotely
+	tagExistsRemotely := false
+	remoteTags, err := repo.Tags()
+	if err != nil {
+		log.Fatalf("Failed to list tags: %v", err)
+	}
+	err = remoteTags.ForEach(func(ref *plumbing.Reference) error {
+		if ref.Name().Short() == tag {
+			tagExistsRemotely = true
+		}
+		return nil
 	})
 	if err != nil {
-		log.Fatalf("Failed to push tag: %v", err)
+		log.Fatalf("Failed to iterate tags: %v", err)
 	}
-	fmt.Printf("Pushed tag %s\n", tag)
+	if tagExistsRemotely {
+		fmt.Printf("Tag %s already exists on remote, skipping push\n", tag)
+	} else {
+		err = repo.Push(&git.PushOptions{
+			RemoteURL: "git@github.com:mslinn/git_tree_go.git",
+			Auth:      sshAuth,
+			RefSpecs:  []config.RefSpec{config.RefSpec("refs/tags/" + tag + ":refs/tags/" + tag)},
+		})
+		if err != nil {
+			log.Fatalf("Failed to push tag: %v", err)
+		}
+		fmt.Printf("Pushed tag %s\n", tag)
+	}
 
 	for _, cmd := range []string{"clean", "install"} {
 		c := exec.Command("make", cmd)
