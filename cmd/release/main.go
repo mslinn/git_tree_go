@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -13,10 +14,37 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"golang.org/x/crypto/ssh"
 )
 
 func main() {
+	// Verify environment variable for GitHub CLI
+	githubToken := os.Getenv("GITHUB_TOKEN")
+	if githubToken == "" {
+		log.Fatal("GITHUB_TOKEN must be set for GitHub CLI release creation")
+	}
+	if !strings.HasPrefix(githubToken, "ghp_") {
+		log.Fatal("GITHUB_TOKEN does not appear to be a valid GitHub Personal Access Token (should start with 'ghp_')")
+	}
+
+	// Load SSH key
+	sshKeyPath := filepath.Join(os.Getenv("HOME"), ".ssh", "id_rsa")
+	if _, err := os.Stat(sshKeyPath); os.IsNotExist(err) {
+		log.Fatalf("SSH key not found at %s. Ensure the key exists and is added to GitHub[](https://github.com/settings/keys).", sshKeyPath)
+	}
+	info, err := os.Stat(sshKeyPath)
+	if err != nil {
+		log.Fatalf("Failed to stat SSH key %s: %v", sshKeyPath, err)
+	}
+	if info.Mode().Perm()&0o077 != 0 {
+		log.Fatalf("SSH key %s has insecure permissions (%o). Run: chmod 600 %s", sshKeyPath, info.Mode().Perm(), sshKeyPath)
+	}
+	sshAuth, err := ssh.NewPublicKeysFromFile("git", sshKeyPath, "")
+	if err != nil {
+		log.Fatalf("Failed to load SSH key from %s: %v. Ensure the key is valid and added to GitHub.", sshKeyPath, err)
+	}
+
 	// Step 1: Extract version from internal/version.go
 	versionFile, err := os.ReadFile("internal/version.go")
 	if err != nil {
@@ -38,7 +66,7 @@ func main() {
 	}
 	defer changelogFile.Close()
 
-	changelogRe := regexp.MustCompile(`##\s*\[?([0-9]+\.[0-9]+\.[0-9]+)\]?`)
+	changelogRe := regexp.MustCompile(`##\s*([0-9]+\.[0-9]+\.[0-9]+)\s*/\s*\d{4}-\d{2}-\d{2}`)
 	scanner := bufio.NewScanner(changelogFile)
 	var changelogVersion string
 	var hasNotes bool
@@ -70,7 +98,7 @@ func main() {
 	}
 	fmt.Printf("Version %s verified successfully\n", goVersion)
 
-	// Step 3: Update CHANGELOG.md with new version header/template (sed-like insert)
+	// Step 3: Update CHANGELOG.md with new version header/template (if needed)
 	updateChangelog(goVersion)
 
 	// Step 4: Git operations (add, commit, push to master)
@@ -102,13 +130,14 @@ func main() {
 		fmt.Println("No changes to commit")
 	}
 
-	// Push to master branch
+	// Push to master branch (SSH)
 	err = repo.Push(&git.PushOptions{
-		Auth:     &http.BasicAuth{Username: os.Getenv("GITHUB_USERNAME"), Password: os.Getenv("GITHUB_TOKEN")},
-		RefSpecs: []config.RefSpec{config.RefSpec("refs/heads/master:refs/heads/master")},
+		RemoteURL: "git@github.com:mslinn/git_tree_go.git",
+		Auth:      sshAuth,
+		RefSpecs:  []config.RefSpec{config.RefSpec("refs/heads/master:refs/heads/master")},
 	})
 	if err != nil {
-		log.Fatalf("Failed to push to master: %v", err)
+		log.Fatalf("Failed to push to master: %v. Ensure SSH key (%s) is valid, permissions are 600, and SSH agent is running (eval `ssh-agent -s` && ssh-add %s). Test with: ssh -T git@github.com", err, sshKeyPath, sshKeyPath)
 	}
 	fmt.Println("Pushed changes to master")
 
@@ -123,8 +152,8 @@ func main() {
 		}
 		_, err = repo.CreateTag(tag, h.Hash(), &git.CreateTagOptions{
 			Tagger: &object.Signature{
-				Name:  os.Getenv("GITHUB_USERNAME"),
-				Email: os.Getenv("GITHUB_USERNAME") + "@users.noreply.github.com",
+				Name:  "mslinn",
+				Email: "mslinn@users.noreply.github.com",
 				When:  time.Now(),
 			},
 			Message: fmt.Sprintf("Release v%s", goVersion),
@@ -135,13 +164,14 @@ func main() {
 		fmt.Printf("Created tag %s\n", tag)
 	}
 
-	// Push tag
+	// Push tag (SSH)
 	err = repo.Push(&git.PushOptions{
-		Auth:     &http.BasicAuth{Username: os.Getenv("GITHUB_USERNAME"), Password: os.Getenv("GITHUB_TOKEN")},
-		RefSpecs: []config.RefSpec{config.RefSpec("refs/tags/" + tag + ":refs/tags/" + tag)},
+		RemoteURL: "git@github.com:mslinn/git_tree_go.git",
+		Auth:      sshAuth,
+		RefSpecs:  []config.RefSpec{config.RefSpec("refs/tags/" + tag + ":refs/tags/" + tag)},
 	})
 	if err != nil {
-		log.Fatalf("Failed to push tag: %v", err)
+		log.Fatalf("Failed to push tag: %v. Ensure SSH key (%s) is valid and SSH agent is running.", err, sshKeyPath)
 	}
 	fmt.Printf("Pushed tag %s\n", tag)
 
@@ -165,7 +195,7 @@ func main() {
 	// Step 8: Create checksum
 	checksum, err := exec.Command("sha256sum", tarball).Output()
 	if err != nil {
-		log.Fatalf("Failed to create checksum: %v", err)
+	 log.Fatalf("Failed to create checksum: %v", err)
 	}
 	checksumFile := fmt.Sprintf("git_tree_go_%s.sha256", goVersion)
 	if err := os.WriteFile(checksumFile, checksum, 0644); err != nil {
@@ -173,7 +203,7 @@ func main() {
 	}
 
 	// Step 9: Create GitHub release using gh
-	c = exec.Command("gh", "release", "create", tag, tarball, checksumFile, "--notes-file", "CHANGELOG.md")
+	c := exec.Command("gh", "release", "create", tag, tarball, checksumFile, "--notes-file", "CHANGELOG.md")
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
 	if err := c.Run(); err != nil {
@@ -183,7 +213,7 @@ func main() {
 	fmt.Println("Release completed successfully")
 }
 
-// updateChangelog inserts a new version header and template into CHANGELOG.md (sed-like)
+// updateChangelog inserts a new version header and template into CHANGELOG.md
 func updateChangelog(version string) {
 	// Read CHANGELOG.md
 	changelogFile, err := os.Open("CHANGELOG.md")
@@ -201,31 +231,38 @@ func updateChangelog(version string) {
 		log.Fatalf("Error reading CHANGELOG.md: %v", err)
 	}
 
-	// Insert new version header/template at the top (after the initial lines if needed)
-	newHeader := fmt.Sprintf("## [%s] - %s", version, time.Now().Format("2006-01-02"))
+	// Check for duplicate version
+	versionRe := regexp.MustCompile(`##\s*` + regexp.QuoteMeta(version) + `\s*/\s*\d{4}-\d{2}-\d{2}`)
+	for _, line := range lines {
+		if versionRe.MatchString(line) {
+			fmt.Printf("Version %s already exists in CHANGELOG.md, skipping update\n", version)
+			return
+		}
+	}
+
+	// Find insertion point (after "# Change Log" or at top)
+	insertIndex := 0
+	for i, line := range lines {
+		if strings.HasPrefix(line, "# Change Log") {
+			insertIndex = i + 1
+			break
+		}
+	}
+
+	// Create new changelog content
+	newHeader := fmt.Sprintf("## %s / %s", version, time.Now().Format("2006-01-02"))
 	newContent := []string{
+		"",
 		newHeader,
 		"",
-		"### Added",
-		"- ",
-		"",
-		"### Changed",
-		"- ",
-		"",
-		"### Deprecated",
-		"- ",
-		"",
-		"### Removed",
-		"- ",
-		"",
-		"### Fixed",
-		"- ",
-		"",
-		"### Security",
 		"- ",
 		"",
 	}
-	newContent = append(newContent, lines...)
+	if insertIndex > 0 {
+		newContent = append(lines[:insertIndex], append(newContent, lines[insertIndex:]...)...)
+	} else {
+		newContent = append(newContent, lines...)
+	}
 
 	// Write updated CHANGELOG.md
 	output, err := os.Create("CHANGELOG.md")
