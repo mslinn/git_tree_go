@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/mslinn/git_tree_go/internal"
 )
 
 // Lists executables installed by git-tree-go
@@ -32,7 +34,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Executables installed by git-tree-go in: %s\n\n", dir)
+	fmt.Printf("Executables installed by git-tree-go v%s in: %s\n\n", internal.Version, dir)
 	for _, entry := range entries {
 		name := entry.Name()
 		description := descriptions[name]

@@ -47,7 +47,7 @@ func main() {
 func showHelp() {
   config := internal.NewConfig()
   fmt.Printf(heredoc.Doc(`
-    git-replicate - Replicates trees of git repositories and writes a bash script to STDOUT.
+    git-replicate v%s - Replicates trees of git repositories and writes a bash script to STDOUT.
 
     If no directories are given, uses default roots (%s) as roots.
     The script clones the repositories and replicates any remotes.
@@ -69,7 +69,7 @@ func showHelp() {
     Usage examples:
     $ git-replicate '$work'
     $ git-replicate '$work $sites'
-  `), strings.Join(config.DefaultRoots, ", "))
+  `), internal.Version, strings.Join(config.DefaultRoots, ", "))
 }
 
 func replicateOne(dir, rootArg string, walker *internal.GitTreeWalker) []string {

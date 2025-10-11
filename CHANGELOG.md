@@ -4,6 +4,7 @@
 
 - Fixed path condensation in `git-exec` command. Output now properly abbreviates paths using environment variable names
   (e.g., `$sites/project` instead of `/mnt/d/sites/project`).
+- Added version number to help output for all commands (displays as "v0.1.13" in command help text).
 
 ## 0.1.12 / 2025-10-10
 

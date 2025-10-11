@@ -13,8 +13,8 @@ import (
 )
 
 func showHelp() {
-  fmt.Println(heredoc.Doc(`
-    git-treeconfig - Configure git-tree settings
+  fmt.Printf(heredoc.Doc(`
+    git-treeconfig v%s - Configure git-tree settings
     This utility creates a configuration file at $HOME/.treeconfig.yml
     Press Enter to accept the default value in brackets.
 
@@ -22,7 +22,7 @@ func showHelp() {
 
     OPTIONS:
       -h   Show this help message
-  `))
+  `), internal.Version)
   os.Exit(0)
 }
 

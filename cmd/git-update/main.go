@@ -34,7 +34,7 @@ func main() {
 func showHelp() {
   config := internal.NewConfig()
   fmt.Printf(heredoc.Doc(`
-    git-update - Recursively updates trees of git repositories.
+    git-update v%s - Recursively updates trees of git repositories.
 
     If no arguments are given, uses default roots (%s) as roots.
     These environment variables point to roots of git repository trees to walk.
@@ -67,7 +67,7 @@ func showHelp() {
     Note: When environment variables are used as roots (e.g., $work), output paths
     will be condensed using the variable name. For example:
       Updating $work/CanPolitique    (instead of /mnt/f/work/CanPolitique)
-  `), strings.Join(config.DefaultRoots, ", "))
+  `), internal.Version, strings.Join(config.DefaultRoots, ", "))
 }
 
 func processRepo(walker *internal.GitTreeWalker, dir string, threadID int, config *internal.Config) {

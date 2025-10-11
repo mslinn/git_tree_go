@@ -57,7 +57,7 @@ func main() {
 func showHelp() {
   config := internal.NewConfig()
   fmt.Printf(heredoc.Doc(`
-    git-exec - Executes an arbitrary shell command for each repository.
+    git-exec v%s - Executes an arbitrary shell command for each repository.
 
     If no arguments are given, uses default roots (%s) as roots.
     These environment variables point to roots of git repository trees to walk.
@@ -90,7 +90,7 @@ func showHelp() {
 
     3) For all subdirectories of the current directory, update Gemfile.lock and install a local copy of the gem:
       $ git-exec . 'bundle update && rake install'
-  `), strings.Join(config.DefaultRoots, ", "))
+  `), internal.Version, strings.Join(config.DefaultRoots, ", "))
 }
 
 func executeAndLog(dir, command string, walker *internal.GitTreeWalker) {

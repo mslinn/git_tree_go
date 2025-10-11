@@ -62,7 +62,7 @@ func main() {
 func showHelp() {
   config := internal.NewConfig()
   fmt.Printf(heredoc.Doc(`
-    git-evars - Generate bash environment variables for each git repository found under specified directory trees.
+    git-evars v%s - Generate bash environment variables for each git repository found under specified directory trees.
 
     Examines trees of git repositories and writes a bash script to STDOUT.
     If no directories are given, uses default roots (%s) as roots.
@@ -92,7 +92,7 @@ func showHelp() {
     Usage examples:
     $ git-evars                 # Use default environment variables as roots
     $ git-evars '$work $sites'  # Use specific environment variables
-  `), strings.Join(config.DefaultRoots, ", "))
+  `), internal.Version, strings.Join(config.DefaultRoots, ", "))
 }
 
 func envVarName(path string) string {

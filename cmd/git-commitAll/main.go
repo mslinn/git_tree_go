@@ -42,7 +42,7 @@ func main() {
 
 func showHelp() {
   config := internal.NewConfig()
-  fmt.Printf(heredoc.Doc(`git-commitAll - Recursively commits and pushes changes in all git repositories under the specified roots.
+  fmt.Printf(heredoc.Doc(`git-commitAll v%s - Recursively commits and pushes changes in all git repositories under the specified roots.
     If no directories are given, uses default roots (%s) as roots.
     Skips directories containing a .ignore file, and all subdirectories.
     Repositories in a detached HEAD state are skipped.
@@ -71,7 +71,7 @@ func showHelp() {
 
     Note: When environment variables are used as roots, output paths will be condensed.
     For example: "Committed and pushed changes in $work/project"
-    `), strings.Join(config.DefaultRoots, ", "))
+    `), internal.Version, strings.Join(config.DefaultRoots, ", "))
 }
 
 func processRepo(walker *internal.GitTreeWalker, dir string, threadID int, config *internal.Config) {
