@@ -157,6 +157,7 @@ func (w *GitTreeWalker) determineRoots(args []string) error {
 // while still supporting explicit $ prefixes when needed.
 func (w *GitTreeWalker) processRootArg(arg string) error {
 	path := arg
+	displayName := arg
 
 	// Match $VAR or '$VAR' patterns (explicit environment variable reference)
 	envVarPattern := regexp.MustCompile(`^(?:'\$[a-zA-Z_]\w*'|\$[a-zA-Z_]\w*)$`)
@@ -167,6 +168,8 @@ func (w *GitTreeWalker) processRootArg(arg string) error {
 			return fmt.Errorf("environment variable '%s' is undefined", arg)
 		}
 		path = envValue
+		// Keep the display name with $ prefix
+		displayName = "$" + varName
 	} else {
 		// Check if arg looks like an environment variable name (alphanumeric/underscore only)
 		// If so, try to expand it as an environment variable (implicit reference)
@@ -176,6 +179,8 @@ func (w *GitTreeWalker) processRootArg(arg string) error {
 			if envValue != "" {
 				// Environment variable exists, use its value
 				path = envValue
+				// Add $ prefix to display name since it's an environment variable
+				displayName = "$" + arg
 			}
 			// If environment variable doesn't exist, treat arg as a literal path
 		}
@@ -192,7 +197,7 @@ func (w *GitTreeWalker) processRootArg(arg string) error {
 			}
 			absPaths = append(absPaths, absPath)
 		}
-		w.RootMap[arg] = absPaths
+		w.RootMap[displayName] = absPaths
 	}
 
 	return nil
