@@ -26,7 +26,7 @@ func NewConfig() *Config {
 	config := &Config{
 		GitTimeout:   300,
 		Verbosity:    LogNormal,
-		DefaultRoots: []string{"sites", "sitesUbuntu", "work"},
+		DefaultRoots: []string{"$sites", "$sitesUbuntu", "$work"},
 	}
 
 	// Try to load from config file
