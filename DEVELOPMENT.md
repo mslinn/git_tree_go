@@ -177,8 +177,38 @@ $ go test -short ./cmd/...
 
 ### Creating Releases
 
-This project uses GoReleaser and GitHub Actions for automated releases. To create a new release:
+#### Using the cmd/release Go executable:
 
+Add this to `~/.bashrc`:
+
+```
+eval `ssh-agent -s`
+ssh-add ~/.ssh/id_rsa
+
+export GITHUB_USERNAME=mslinn
+# Create classic token at https://github.com/settings/tokens with repo scope
+export GITHUB_TOKEN=your_personal_access_token
+```
+
+For a new release, you need to update internal/version.go to a new version
+(e.g., 0.1.14) and ensure `CHANGELOG.md` does **not** yet have that version.
+
+Run:
+
+```shell
+$ ./release
+```
+
+Or:
+
+```shell
+$ make release
+```
+
+### Older Instructions For Creating Releases
+
+This project uses GoReleaser and GitHub Actions for automated releases.
+To create a new release:
 
 #### Using the Release Script
 
