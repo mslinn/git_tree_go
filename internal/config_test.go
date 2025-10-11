@@ -35,7 +35,7 @@ func TestConfig_NewConfig_Defaults(t *testing.T) {
 		t.Errorf("Expected default verbosity to be LogNormal (%d), got %d", LogNormal, config.Verbosity)
 	}
 
-	expectedRoots := []string{"$sites", "$sitesUbuntu", "$work"}
+	expectedRoots := []string{"sites", "sitesUbuntu", "work"}
 	if len(config.DefaultRoots) != len(expectedRoots) {
 		t.Errorf("Expected default_roots length to be %d, got %d", len(expectedRoots), len(config.DefaultRoots))
 	}

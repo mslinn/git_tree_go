@@ -135,6 +135,13 @@ default_roots:
 - projects
 ```
 
+**Note:** The `default_roots` entries can be:
+- **Environment variable names** (e.g., `sites`, `work`) - will be expanded automatically if the environment variable exists
+- **Environment variable references** (e.g., `$sites`, `$work`) - explicitly marked with `$` prefix
+- **Literal directory paths** (e.g., `/home/user/projects`, `./local-repos`) - used as-is
+
+If an entry looks like a valid environment variable name (alphanumeric and underscores only) and that environment variable is defined, it will be automatically expanded. Otherwise, it will be treated as a literal directory path.
+
 ### Environment Variables
 
 For temporary overrides or use in CI/CD environments, you can use environment variables.

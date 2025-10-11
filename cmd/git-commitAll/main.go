@@ -58,8 +58,11 @@ func showHelp() {
     Usage:
       git-commitAll [OPTIONS] [ROOTS...]
 
-    ROOTS can be directory names or environment variable references (e.g., '$work').
-    Multiple roots can be specified in a single quoted string.
+    ROOTS can be:
+      - Environment variable names (e.g., work, sites) - expanded automatically if defined
+      - Environment variable references (e.g., '$work', $sites) - with explicit $ prefix
+      - Directory paths (e.g., /home/user/projects, .)
+    Multiple roots can be specified as separate arguments or in a single quoted string.
 
     Usage examples:
       git-commitAll                                # Commit with default message "-"

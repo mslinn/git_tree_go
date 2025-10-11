@@ -133,10 +133,18 @@ func (w *GitTreeWalker) determineRoots(args []string) error {
 }
 
 // processRootArg processes a root argument (environment variable or path).
+// This function handles three types of inputs:
+// 1. Explicit environment variable references: $VAR or '$VAR' - must be defined
+// 2. Implicit environment variable names: VAR (alphanumeric/underscore only) - expanded if defined
+// 3. Literal paths: any other string - used as-is
+//
+// This allows users to specify roots in their config file without the $ prefix
+// (e.g., "sites" instead of "$sites"), making the configuration more readable
+// while still supporting explicit $ prefixes when needed.
 func (w *GitTreeWalker) processRootArg(arg string) error {
 	path := arg
 
-	// Match $VAR or '$VAR' patterns
+	// Match $VAR or '$VAR' patterns (explicit environment variable reference)
 	envVarPattern := regexp.MustCompile(`^(?:'\$[a-zA-Z_]\w*'|\$[a-zA-Z_]\w*)$`)
 	if match := envVarPattern.FindString(arg); match != "" {
 		varName := strings.Trim(match, "'$")
@@ -145,6 +153,18 @@ func (w *GitTreeWalker) processRootArg(arg string) error {
 			return fmt.Errorf("environment variable '%s' is undefined", arg)
 		}
 		path = envValue
+	} else {
+		// Check if arg looks like an environment variable name (alphanumeric/underscore only)
+		// If so, try to expand it as an environment variable (implicit reference)
+		varNamePattern := regexp.MustCompile(`^[a-zA-Z_]\w*$`)
+		if varNamePattern.MatchString(arg) {
+			envValue := os.Getenv(arg)
+			if envValue != "" {
+				// Environment variable exists, use its value
+				path = envValue
+			}
+			// If environment variable doesn't exist, treat arg as a literal path
+		}
 	}
 
 	if path != "" {

@@ -75,8 +75,11 @@ func showHelp() {
       -s, --serial         Run tasks serially in a single thread in the order specified.
       -v, --verbose        Increase verbosity. Can be used multiple times (e.g., -v, -vv).
 
-    ROOTS can be directory names or environment variable references (e.g., '$work').
-    Multiple roots can be specified in a single quoted string.
+    ROOTS can be:
+      - Environment variable names (e.g., work, sites) - expanded automatically if defined
+      - Environment variable references (e.g., '$work', $sites) - with explicit $ prefix
+      - Directory paths (e.g., /home/user/projects, .)
+    Multiple roots can be specified as separate arguments or in a single quoted string.
 
     Usage examples:
     1) For all git repositories under $sites, display their root directories:
