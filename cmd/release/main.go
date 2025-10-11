@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -151,7 +152,6 @@ func main() {
 		fmt.Printf("Created tag %s\n", tag)
 	}
 
-	// Check if tag exists remotely
 	tagExistsRemotely := false
 	remoteTags, err := repo.Tags()
 	if err != nil {
@@ -191,8 +191,10 @@ func main() {
 
 	tarball := fmt.Sprintf("git_tree_go_%s.tar.gz", goVersion)
 	c := exec.Command("tar", "-czf", tarball, "--exclude=.git", ".")
+	var stderr bytes.Buffer
+	c.Stderr = &stderr
 	if err := c.Run(); err != nil {
-		log.Fatalf("Failed to create tarball: %v", err)
+		log.Fatalf("Failed to create tarball: %v, stderr: %s", err, stderr.String())
 	}
 
 	checksum, err := exec.Command("sha256sum", tarball).Output()
@@ -206,9 +208,9 @@ func main() {
 
 	c = exec.Command("gh", "release", "create", tag, tarball, checksumFile, "--notes-file", "CHANGELOG.md")
 	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	c.Stderr = &stderr
 	if err := c.Run(); err != nil {
-		log.Fatalf("Failed to create GitHub release: %v", err)
+		log.Fatalf("Failed to create GitHub release: %v, stderr: %s", err, stderr.String())
 	}
 
 	fmt.Println("Release completed successfully")
