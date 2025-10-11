@@ -6,6 +6,8 @@ import (
   "path/filepath"
   "strings"
   "testing"
+
+  "github.com/mslinn/git_tree_go/internal"
 )
 
 // TestExecuteAndLog_Success tests successful command execution
@@ -23,9 +25,15 @@ func TestExecuteAndLog_Success(t *testing.T) {
     t.Fatalf("Failed to write test file: %v", err)
   }
 
+  // Create a walker for testing
+  walker, err := internal.NewGitTreeWalker([]string{tmpDir}, false)
+  if err != nil {
+    t.Fatalf("Failed to create walker: %v", err)
+  }
+
   // Execute ls command (should succeed)
   // We can't easily capture the log output, but we can verify the function doesn't panic
-  executeAndLog(tmpDir, "ls -la")
+  executeAndLog(tmpDir, "ls -la", walker)
 }
 
 // TestExecuteAndLog_Failure tests failed command execution
@@ -37,8 +45,14 @@ func TestExecuteAndLog_Failure(t *testing.T) {
   }
   defer os.RemoveAll(tmpDir)
 
+  // Create a walker for testing
+  walker, err := internal.NewGitTreeWalker([]string{tmpDir}, false)
+  if err != nil {
+    t.Fatalf("Failed to create walker: %v", err)
+  }
+
   // Execute a command that should fail
-  executeAndLog(tmpDir, "exit 1")
+  executeAndLog(tmpDir, "exit 1", walker)
 }
 
 // TestExecuteAndLog_WithOutput tests command execution with output
@@ -50,8 +64,14 @@ func TestExecuteAndLog_WithOutput(t *testing.T) {
   }
   defer os.RemoveAll(tmpDir)
 
+  // Create a walker for testing
+  walker, err := internal.NewGitTreeWalker([]string{tmpDir}, false)
+  if err != nil {
+    t.Fatalf("Failed to create walker: %v", err)
+  }
+
   // Execute echo command
-  executeAndLog(tmpDir, "echo 'Hello, World!'")
+  executeAndLog(tmpDir, "echo 'Hello, World!'", walker)
 }
 
 // TestGitExec_Integration tests the full git-exec workflow
@@ -229,8 +249,14 @@ func TestGitExec_WithQuotedCommand(t *testing.T) {
     t.Fatalf("Failed to create subdirectory: %v", err)
   }
 
+  // Create a walker for testing
+  walker, err := internal.NewGitTreeWalker([]string{tmpDir}, false)
+  if err != nil {
+    t.Fatalf("Failed to create walker: %v", err)
+  }
+
   // Execute a conditional command
-  executeAndLog(tmpDir, "if [ -d subdir ]; then echo 'found'; fi")
+  executeAndLog(tmpDir, "if [ -d subdir ]; then echo 'found'; fi", walker)
 }
 
 // TestGitExec_CommandInDirectory tests that commands are executed in the correct directory

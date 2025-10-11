@@ -48,7 +48,7 @@ func main() {
 
   // Process repositories
   walker.Process(func(dir string, threadID int, w *internal.GitTreeWalker) {
-    executeAndLog(dir, shellCommand)
+    executeAndLog(dir, shellCommand, w)
   })
 
   internal.ShutdownLogger()
@@ -93,7 +93,7 @@ func showHelp() {
   `), strings.Join(config.DefaultRoots, ", "))
 }
 
-func executeAndLog(dir, command string) {
+func executeAndLog(dir, command string, walker *internal.GitTreeWalker) {
   // Execute the command
   execCmd := exec.Command("sh", "-c", command)
   execCmd.Dir = dir
@@ -106,13 +106,16 @@ func executeAndLog(dir, command string) {
     if len(outputStr) > 0 {
       internal.Log(internal.LogQuiet, outputStr, internal.ColorRed)
     } else {
-      errorMsg := fmt.Sprintf("Error: Command '%s' failed in %s", command, dir)
+      abbrevDir := walker.AbbreviatePath(dir)
+      errorMsg := fmt.Sprintf("Error: Command '%s' failed in %s", command, abbrevDir)
       internal.Log(internal.LogQuiet, errorMsg, internal.ColorRed)
     }
   } else {
     // Command succeeded
     if len(outputStr) > 0 {
-      internal.LogStdout(outputStr)
+      // Abbreviate paths in output
+      abbreviated := walker.AbbreviatePath(outputStr)
+      internal.LogStdout(abbreviated)
     }
   }
 }
