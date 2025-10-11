@@ -266,6 +266,9 @@ func TestGitReplicate_Integration(t *testing.T) {
   w.Close()
   os.Stdout = oldStdout
 
+  // Reset logger for next test
+  internal.ResetLogger()
+
   output := make([]byte, 8192)
   n, _ := r.Read(output)
   outputStr := string(output[:n])
@@ -292,7 +295,6 @@ func TestGitReplicate_Integration(t *testing.T) {
 
 // TestGitReplicate_WithIgnoreFile tests that .ignore files are respected
 func TestGitReplicate_WithIgnoreFile(t *testing.T) {
-  t.Skip("Bah! Mere details!")
   if testing.Short() {
     t.Skip("Skipping integration test in short mode")
   }
@@ -359,6 +361,9 @@ func TestGitReplicate_WithIgnoreFile(t *testing.T) {
   w.Close()
   os.Stdout = oldStdout
 
+  // Reset logger for next test
+  internal.ResetLogger()
+
   output := make([]byte, 8192)
   n, _ := r.Read(output)
   outputStr := string(output[:n])
@@ -375,7 +380,6 @@ func TestGitReplicate_WithIgnoreFile(t *testing.T) {
 
 // TestGitReplicate_NoRepositories tests behavior when no repositories are found
 func TestGitReplicate_NoRepositories(t *testing.T) {
-  t.Skip("Bah! Mere details!")
   if testing.Short() {
     t.Skip("Skipping integration test in short mode")
   }
@@ -405,6 +409,9 @@ func TestGitReplicate_NoRepositories(t *testing.T) {
   // Restore stdout and read output
   w.Close()
   os.Stdout = oldStdout
+
+  // Reset logger for next test
+  internal.ResetLogger()
 
   output := make([]byte, 4096)
   n, _ := r.Read(output)

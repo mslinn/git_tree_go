@@ -32,6 +32,7 @@ type Logger struct {
 	wg        sync.WaitGroup
 	mu        sync.Mutex
 	stdaux    io.Writer // Typically stderr
+	closed    bool
 }
 
 var (
@@ -99,6 +100,13 @@ func (l *Logger) LogStdout(message string) {
 
 // Shutdown gracefully shuts down the logger.
 func (l *Logger) Shutdown() {
+	l.mu.Lock()
+	if l.closed {
+		l.mu.Unlock()
+		return
+	}
+	l.closed = true
+	l.mu.Unlock()
 	close(l.queue)
 	l.wg.Wait()
 }
@@ -138,4 +146,13 @@ func ShutdownLogger() {
 	if defaultLogger != nil {
 		defaultLogger.Shutdown()
 	}
+}
+
+// ResetLogger resets the default logger (primarily for testing).
+func ResetLogger() {
+	if defaultLogger != nil {
+		defaultLogger.Shutdown()
+	}
+	defaultLogger = nil
+	once = sync.Once{}
 }

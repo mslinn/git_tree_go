@@ -214,6 +214,9 @@ func TestGitUpdate_Integration(t *testing.T) {
   case <-time.After(30 * time.Second):
     t.Fatal("Test timed out")
   }
+
+  // Reset logger for next test
+  internal.ResetLogger()
 }
 
 // TestGitUpdate_WithVerboseFlag tests verbose output
@@ -308,6 +311,9 @@ func TestGitUpdate_WithVerboseFlag(t *testing.T) {
   case <-time.After(30 * time.Second):
     t.Fatal("Test timed out")
   }
+
+  // Reset logger for next test
+  internal.ResetLogger()
 }
 
 // TestGitUpdate_WithIgnoreFile tests that .ignore files are respected
@@ -420,6 +426,9 @@ func TestGitUpdate_WithIgnoreFile(t *testing.T) {
   case <-time.After(30 * time.Second):
     t.Fatal("Test timed out")
   }
+
+  // Reset logger for next test
+  internal.ResetLogger()
 }
 
 // TestGitUpdate_NoRepositories tests behavior when no repositories are found
@@ -451,6 +460,9 @@ func TestGitUpdate_NoRepositories(t *testing.T) {
   case <-time.After(10 * time.Second):
     t.Fatal("Test timed out")
   }
+
+  // Reset logger for next test
+  internal.ResetLogger()
 }
 
 // TestGitUpdate_Timeout tests timeout handling
