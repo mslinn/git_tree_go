@@ -206,11 +206,18 @@ func main() {
 		log.Fatalf("Failed to write checksum: %v", err)
 	}
 
-	c = exec.Command("gh", "release", "create", tag, tarball, checksumFile, "--notes-file", "CHANGELOG.md")
-	c.Stdout = os.Stdout
-	c.Stderr = &stderr
-	if err := c.Run(); err != nil {
-		log.Fatalf("Failed to create GitHub release: %v, stderr: %s", err, stderr.String())
+	// Check if release exists
+	c = exec.Command("gh", "release", "view", tag)
+	if err := c.Run(); err == nil {
+		fmt.Printf("Release %s already exists, skipping creation\n", tag)
+	} else {
+		c = exec.Command("gh", "release", "create", tag, tarball, checksumFile, "--notes-file", "CHANGELOG.md")
+		c.Stdout = os.Stdout
+		c.Stderr = &stderr
+		if err := c.Run(); err != nil {
+			log.Fatalf("Failed to create GitHub release: %v, stderr: %s", err, stderr.String())
+		}
+		fmt.Printf("Created GitHub release %s\n", tag)
 	}
 
 	fmt.Println("Release completed successfully")
