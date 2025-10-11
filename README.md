@@ -124,15 +124,15 @@ Configuration saved to /home/user/.treeconfig.yml
 ### Configuration File
 
 The `git-treeconfig` command generates a YAML file (`~/.treeconfig.yml`) that you can also edit manually.
-Here is an example:
+Notice in this example that the roots start with a dollar sign ($):
 
 ```yaml
 ---
 git_timeout: 600
 verbosity: 1
 default_roots:
-- dev
-- projects
+- $dev
+- $projects
 ```
 
 **Note:** The `default_roots` entries can be:
