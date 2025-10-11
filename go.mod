@@ -1,6 +1,6 @@
 module github.com/mslinn/git_tree_go
 
-go 1.25.1
+go 1.24
 
 require (
 	github.com/MakeNowJust/heredoc v1.0.0
