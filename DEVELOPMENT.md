@@ -181,7 +181,7 @@ $ go test -short ./cmd/...
 
 Add this to `~/.bashrc`:
 
-```
+```text
 eval `ssh-agent -s`
 ssh-add ~/.ssh/id_rsa
 
