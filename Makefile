@@ -84,6 +84,12 @@ git-treeconfig: $(BIN_DIR)
 git-update: $(BIN_DIR)
 	@$(GOBUILD) $(LDFLAGS) -o $(BIN_DIR)/git-update ./cmd/git-update
 
+# Build the release tool (dev-only, not installed with other commands)
+release-tool: $(BIN_DIR)
+	@echo "Building release tool..."
+	@$(GOBUILD) $(LDFLAGS) -o $(BIN_DIR)/release ./cmd/release
+	@echo "Release tool built at $(BIN_DIR)/release"
+
 # Help target
 help:
 	@echo "Available targets:"
@@ -93,6 +99,7 @@ help:
 	@echo "  fmt           - Format all Go code"
 	@echo "  help          - Show this help message"
 	@echo "  install       - Install all commands to GOPATH/bin"
+	@echo "  release-tool  - Build the release tool (dev-only)"
 	@echo "  test          - Run all tests"
 	@echo "  tidy          - Tidy go.mod and go.sum"
 	@echo "  vet           - Run go vet on all code"

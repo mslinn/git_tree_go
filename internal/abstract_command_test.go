@@ -1,9 +1,10 @@
 package internal
 
 import (
-	"flag"
 	"os"
 	"testing"
+
+	flag "github.com/spf13/pflag"
 )
 
 // TestAbstractCommand_Initialization tests that config loads and verbosity is set

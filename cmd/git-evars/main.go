@@ -1,7 +1,6 @@
 package main
 
 import (
-  "flag"
   "fmt"
   "github.com/MakeNowJust/heredoc"
   "os"
@@ -9,6 +8,7 @@ import (
   "strings"
 
   "github.com/mslinn/git_tree_go/internal"
+  flag "github.com/spf13/pflag"
 )
 
 func main() {
@@ -17,8 +17,7 @@ func main() {
   // Add zowee flag
   var zowee bool
   remainingArgs := cmd.ParseFlagsWithCallback(showHelp, func(fs *flag.FlagSet) {
-    fs.BoolVar(&zowee, "z", false, "Optimize variable definitions for size")
-    fs.BoolVar(&zowee, "zowee", false, "Optimize variable definitions for size")
+    fs.BoolVarP(&zowee, "zowee", "z", false, "Optimize variable definitions for size")
   })
 
   // Create walker
@@ -80,8 +79,8 @@ func showHelp() {
     Options:
       -h, --help           Show this help message and exit.
       -q, --quiet          Suppress normal output, only show errors.
-      -z, --zowee          Optimize variable definitions for size.
       -v, --verbose        Increase verbosity. Can be used multiple times (e.g., -v, -vv).
+      -z, --zowee          Optimize variable definitions for size.
 
     ROOTS can be:
       - Environment variable names (e.g., work, sites) - expanded automatically if defined

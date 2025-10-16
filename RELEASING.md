@@ -11,11 +11,69 @@ This document describes the release process for `git-tree-go`.
 4. Review and update `CHANGELOG.md` if needed
 
 
-## Creating a Release
+## Creating a Release with the Release Tool
 
-### 1. Version Tagging
+The project includes a Go-based release tool that automates the release process.
 
-Create and push a new version tag:
+### 1. Build the Release Tool
+
+```bash
+make release-tool
+```
+
+This creates the `bin/release` executable. This tool is for developers only and is not installed with the other commands.
+
+### 2. Run the Release Tool
+
+Basic usage:
+
+```bash
+./bin/release
+```
+
+The tool will:
+- Show the current version
+- Prompt for the new version number (with an auto-incremented default)
+- Validate the version format
+- Check you're on the main/master branch
+- Commit any uncommitted changes (instead of aborting)
+- Verify the tag doesn't already exist
+- Run tests (unless you skip them with `-s`)
+- Update `internal/version.go` with the new version
+- Ask for confirmation (defaults to "Yes")
+- Create and push the version tag
+- Trigger the GitHub Actions release workflow
+
+### 3. Release Tool Options
+
+```bash
+./bin/release [OPTIONS] [VERSION]
+```
+
+Options:
+- `-d, --debug`: Run GoReleaser in debug mode in the CI workflow
+- `-h, --help`: Display help message
+- `-s, --skip-tests`: Skip running integration tests
+
+Examples:
+
+```bash
+# Interactive release (prompts for version)
+./bin/release
+
+# Specify version directly
+./bin/release 1.2.3
+
+# Skip tests during release
+./bin/release -s 1.2.4
+
+# Enable debug mode for GoReleaser
+./bin/release -d 1.2.5
+```
+
+## Manual Release (Alternative Method)
+
+If you prefer to create releases manually, you can still use git tags directly:
 
 ```bash
 # For a new version (e.g., v1.2.3)
@@ -23,9 +81,9 @@ git tag -a v1.2.3 -m "Release v1.2.3"
 git push origin v1.2.3
 ```
 
-### 2. Automated Release Process
+## Automated GitHub Release Workflow
 
-Once you push a tag starting with `v`, GitHub Actions will automatically:
+Once you push a tag starting with `v` (either via the release tool or manually), GitHub Actions will automatically:
 
 1. Run the release workflow (`.github/workflows/release.yml`)
 2. Build binaries for all platforms using GoReleaser
@@ -36,7 +94,7 @@ Once you push a tag starting with `v`, GitHub Actions will automatically:
    - Auto-generated changelog
 
 
-### 3. Supported Platforms
+## Supported Platforms
 
 The release process builds for:
 
@@ -49,7 +107,7 @@ This produces 12 archives (6 platform/arch combinations × 2 formats):
 - `.zip` for Windows
 
 
-### 4. Verify the Release
+## Verify the Release
 
 After the workflow completes:
 

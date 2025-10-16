@@ -2,7 +2,6 @@ package main
 
 import (
   "bufio"
-  "flag"
   "fmt"
   "github.com/MakeNowJust/heredoc"
   "os"
@@ -10,6 +9,7 @@ import (
   "strings"
 
   "github.com/mslinn/git_tree_go/internal"
+  flag "github.com/spf13/pflag"
 )
 
 func showHelp() {
@@ -21,14 +21,14 @@ func showHelp() {
     Usage: git-treeconfig [OPTIONS]
 
     OPTIONS:
-      -h   Show this help message
+      -h, --help   Show this help message
   `), internal.Version)
   os.Exit(0)
 }
 
 func main() {
   // Parse command-line flags
-  helpFlag := flag.Bool("h", false, "Show help message")
+  helpFlag := flag.BoolP("help", "h", false, "Show help message")
   flag.Parse()
 
   if *helpFlag {

@@ -1,9 +1,10 @@
 package internal
 
 import (
-	"flag"
 	"fmt"
 	"os"
+
+	flag "github.com/spf13/pflag"
 )
 
 // AbstractCommand provides common functionality for all git-tree commands.
@@ -35,6 +36,10 @@ func (cmd *AbstractCommand) handleVerboseFlag() {
 	for _, arg := range cmd.Args {
 		if arg == "-v" || arg == "--verbose" {
 			verboseCount++
+		} else if arg == "-vv" {
+			verboseCount += 2
+		} else if arg == "-vvv" {
+			verboseCount += 3
 		} else {
 			remainingArgs = append(remainingArgs, arg)
 		}
@@ -53,15 +58,12 @@ func (cmd *AbstractCommand) ParseCommonFlags(helpFunc func()) []string {
 	cmd.handleVerboseFlag()
 
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.SortFlags = true // Ensure flags are sorted alphabetically
 
-	help := fs.Bool("h", false, "Show this help message and exit")
-	fs.BoolVar(help, "help", false, "Show this help message and exit")
-
-	quiet := fs.Bool("q", false, "Suppress normal output, only show errors")
-	fs.BoolVar(quiet, "quiet", false, "Suppress normal output, only show errors")
-
-	serial := fs.Bool("s", false, "Run tasks serially in a single thread")
-	fs.BoolVar(serial, "serial", false, "Run tasks serially in a single thread")
+	// Define flags using pflag's P methods for short and long options
+	help := fs.BoolP("help", "h", false, "Show this help message and exit")
+	quiet := fs.BoolP("quiet", "q", false, "Suppress normal output, only show errors")
+	serial := fs.BoolP("serial", "s", false, "Run tasks serially in a single thread")
 
 	// Parse the flags
 	if err := fs.Parse(cmd.Args); err != nil {
@@ -103,15 +105,12 @@ func (cmd *AbstractCommand) ParseFlagsWithCallback(helpFunc func(), callback fun
 	cmd.handleVerboseFlag()
 
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	fs.SortFlags = true // Ensure flags are sorted alphabetically
 
-	help := fs.Bool("h", false, "Show this help message and exit")
-	fs.BoolVar(help, "help", false, "Show this help message and exit")
-
-	quiet := fs.Bool("q", false, "Suppress normal output, only show errors")
-	fs.BoolVar(quiet, "quiet", false, "Suppress normal output, only show errors")
-
-	serial := fs.Bool("s", false, "Run tasks serially in a single thread")
-	fs.BoolVar(serial, "serial", false, "Run tasks serially in a single thread")
+	// Define common flags using pflag's P methods for short and long options
+	help := fs.BoolP("help", "h", false, "Show this help message and exit")
+	quiet := fs.BoolP("quiet", "q", false, "Suppress normal output, only show errors")
+	serial := fs.BoolP("serial", "s", false, "Run tasks serially in a single thread")
 
 	// Allow custom flags
 	if callback != nil {

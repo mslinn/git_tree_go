@@ -2,7 +2,6 @@ package main
 
 import (
   "context"
-  "flag"
   "fmt"
   "github.com/MakeNowJust/heredoc"
   "os"
@@ -12,6 +11,7 @@ import (
 
   "github.com/mslinn/git_tree_go/internal"
   "github.com/go-git/go-git/v5"
+  flag "github.com/spf13/pflag"
 )
 
 var commitMessage string
@@ -21,8 +21,7 @@ func main() {
 
   // Add message flag
   remainingArgs := cmd.ParseFlagsWithCallback(showHelp, func(fs *flag.FlagSet) {
-    fs.StringVar(&commitMessage, "m", "-", "Use the given string as the commit message")
-    fs.StringVar(&commitMessage, "message", "-", "Use the given string as the commit message")
+    fs.StringVarP(&commitMessage, "message", "m", "-", "Use the given string as the commit message")
   })
 
   // Create walker
