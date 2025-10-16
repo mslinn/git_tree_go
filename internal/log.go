@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 	"sync"
+
+	"github.com/fatih/color"
 )
 
 // Verbosity levels
@@ -18,11 +20,11 @@ const (
 
 // ANSI color codes
 const (
-	ColorReset  = "\033[0m"
-	ColorRed    = "\033[31m"
-	ColorGreen  = "\033[32m"
-	ColorYellow = "\033[33m"
-	ColorCyan   = "\033[36m"
+	ColorReset  = ""
+	ColorRed    = "red"
+	ColorGreen  = "green"
+	ColorYellow = "yellow"
+	ColorCyan   = "cyan"
 )
 
 // Logger provides thread-safe logging with verbosity control and color support.
@@ -75,7 +77,7 @@ func (l *Logger) GetVerbosity() int {
 }
 
 // Log logs a message with the specified verbosity level and optional color.
-func (l *Logger) Log(level int, message string, color string) {
+func (l *Logger) Log(level int, message string, colorName string) {
 	if l.GetVerbosity() < level {
 		return
 	}
@@ -85,9 +87,18 @@ func (l *Logger) Log(level int, message string, color string) {
 		if line == "" && len(lines) > 1 {
 			continue
 		}
-		coloredLine := line
-		if color != "" {
-			coloredLine = color + line + ColorReset
+		var coloredLine string
+		switch colorName {
+		case ColorRed:
+			coloredLine = color.RedString(line)
+		case ColorGreen:
+			coloredLine = color.GreenString(line)
+		case ColorYellow:
+			coloredLine = color.YellowString(line)
+		case ColorCyan:
+			coloredLine = color.CyanString(line)
+		default:
+			coloredLine = line
 		}
 		l.queue <- coloredLine
 	}

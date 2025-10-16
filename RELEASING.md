@@ -32,6 +32,7 @@ Basic usage:
 ```
 
 The tool will:
+
 - Show the current version
 - Prompt for the new version number (with an auto-incremented default)
 - Validate the version format
@@ -51,6 +52,7 @@ The tool will:
 ```
 
 Options:
+
 - `-d, --debug`: Run GoReleaser in debug mode in the CI workflow
 - `-h, --help`: Display help message
 - `-s, --skip-tests`: Skip running integration tests

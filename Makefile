@@ -18,7 +18,11 @@ GOINSTALL := $(GOCMD) install
 # Build flags
 LDFLAGS := -ldflags="-s -w"
 
-all: fmt vet build
+all: deps fmt vet build
+
+deps:
+	@echo "Installing dependencies..."
+	@$(GOCMD) get github.com/fatih/color
 
 build: $(BIN_DIR)
 	@echo "Building all commands..."
